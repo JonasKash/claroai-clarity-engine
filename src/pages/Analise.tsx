@@ -1,6 +1,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { Bot, User } from 'lucide-react';
 import ClaroButton from '@/components/ClaroButton';
 import ClaroInput from '@/components/ClaroInput';
 import LoadingSpinner from '@/components/LoadingSpinner';
@@ -23,11 +24,12 @@ const Analise = () => {
   const [currentInput, setCurrentInput] = useState('');
   const [isTyping, setIsTyping] = useState(false);
   const [currentStep, setCurrentChatStep] = useState(0);
+  const [awaitingResponse, setAwaitingResponse] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const chatSteps = [
     {
-      message: "Olá! 👋 Sou a IA do ClaroAI. Vou fazer uma análise completa do seu negócio em poucos minutos.",
+      message: "Olá! 👋 Sou Clara, sua assistente de análise comercial da ClaroAI. Vou fazer uma análise completa do seu negócio em poucos minutos.",
       type: 'greeting'
     },
     {
@@ -120,6 +122,8 @@ const Analise = () => {
   };
 
   const handleInputSubmit = (value: string) => {
+    if (awaitingResponse) return;
+    
     const step = chatSteps[currentStep];
     console.log(`[Analise] Resposta recebida para ${step.field}:`, value);
     
@@ -127,29 +131,44 @@ const Analise = () => {
 
     const sanitizedValue = value.trim().replace(/[<>\"']/g, '');
     
+    setAwaitingResponse(true);
     addMessage(sanitizedValue, 'user');
     
     if (step.field) {
       setUser({ [step.field]: sanitizedValue });
     }
 
-    proceedToNextStep();
+    // Clear input field
+    setCurrentInput('');
+    
+    setTimeout(() => {
+      setAwaitingResponse(false);
+      proceedToNextStep();
+    }, 1000);
   };
 
   const handleOptionSelect = (option: string) => {
+    if (awaitingResponse) return;
+    
     const step = chatSteps[currentStep];
     console.log(`[Analise] Opção selecionada para ${step.field}:`, option);
     
+    setAwaitingResponse(true);
     addMessage(option, 'user');
     
     if (step.field) {
       setUser({ [step.field]: option });
     }
 
-    proceedToNextStep();
+    setTimeout(() => {
+      setAwaitingResponse(false);
+      proceedToNextStep();
+    }, 1000);
   };
 
   const handleMultiInputSubmit = () => {
+    if (awaitingResponse) return;
+    
     const instagram = currentInput.includes('@') ? currentInput : '';
     const site = currentInput.includes('http') || currentInput.includes('.com') ? currentInput : '';
     
@@ -158,10 +177,17 @@ const Analise = () => {
     if (site) response.push(`Site: ${site}`);
     if (response.length === 0) response.push('Ainda não tenho');
 
+    setAwaitingResponse(true);
     addMessage(response.join('\n'), 'user');
     setUser({ instagram, site });
+    
+    // Clear input field
     setCurrentInput('');
-    proceedToNextStep();
+    
+    setTimeout(() => {
+      setAwaitingResponse(false);
+      proceedToNextStep();
+    }, 1000);
   };
 
   const proceedToNextStep = () => {
@@ -200,15 +226,19 @@ const Analise = () => {
 
   return (
     <div className="min-h-screen bg-claro-background">
-      {/* Header Moderno */}
+      {/* Header with Assistant Info */}
       <header className="bg-claro-card/80 backdrop-blur-sm border-b border-claro-accent/20 p-4">
         <div className="flex items-center justify-between max-w-4xl mx-auto">
           <div className="flex items-center space-x-3">
-            <div className="w-10 h-10 bg-claro-gradient rounded-full flex items-center justify-center">
-              <span className="text-white font-bold text-sm">AI</span>
+            <div className="w-12 h-12 bg-claro-gradient rounded-full flex items-center justify-center">
+              <img 
+                src="https://images.unsplash.com/photo-1494790108755-2616b612b47c?w=80&h=80&fit=crop&crop=face&auto=format"
+                alt="Clara - Assistente IA"
+                className="w-10 h-10 rounded-full object-cover"
+              />
             </div>
             <div>
-              <h1 className="text-lg font-bold claro-text-gradient">ClaroAI Assistant</h1>
+              <h1 className="text-lg font-bold claro-text-gradient">Clara - Assistente ClaroAI</h1>
               <p className="text-xs text-gray-400">Análise Comercial Inteligente</p>
             </div>
           </div>
@@ -236,9 +266,11 @@ const Analise = () => {
                     ? 'bg-claro-gradient' 
                     : 'bg-claro-accent'
                 }`}>
-                  <span className="text-white font-bold text-xs">
-                    {message.type === 'user' ? 'U' : 'AI'}
-                  </span>
+                  {message.type === 'user' ? (
+                    <User className="text-white font-bold text-xs w-4 h-4" />
+                  ) : (
+                    <Bot className="text-white font-bold text-xs w-4 h-4" />
+                  )}
                 </div>
                 
                 {/* Message Bubble */}
@@ -249,8 +281,8 @@ const Analise = () => {
                 }`}>
                   <p className="text-sm leading-relaxed whitespace-pre-line">{message.content}</p>
                   
-                  {/* Options */}
-                  {message.options && isWaitingForOptions && (
+                  {/* Options - Only show if not awaiting response */}
+                  {message.options && isWaitingForOptions && !awaitingResponse && (
                     <div className="mt-4 grid gap-2">
                       {message.options.map((option, index) => (
                         <ClaroButton
@@ -259,6 +291,7 @@ const Analise = () => {
                           size="sm"
                           className="w-full text-left justify-start hover:scale-105 transition-transform"
                           onClick={() => handleOptionSelect(option)}
+                          disabled={awaitingResponse}
                         >
                           {option}
                         </ClaroButton>
@@ -275,7 +308,7 @@ const Analise = () => {
             <div className="flex justify-start animate-fade-in">
               <div className="flex gap-3 max-w-[80%]">
                 <div className="w-8 h-8 bg-claro-accent rounded-full flex items-center justify-center">
-                  <span className="text-white font-bold text-xs">AI</span>
+                  <Bot className="text-white font-bold text-xs w-4 h-4" />
                 </div>
                 <div className="claro-glass rounded-2xl p-4">
                   <div className="flex space-x-1">
@@ -296,7 +329,7 @@ const Analise = () => {
           )}
 
           {/* Final CTA */}
-          {isFinalStep && (
+          {isFinalStep && !awaitingResponse && (
             <div className="flex justify-center animate-fade-in">
               <ClaroButton 
                 onClick={handleViewAnalysis} 
@@ -312,7 +345,7 @@ const Analise = () => {
         </div>
 
         {/* Input Area */}
-        {isWaitingForInput && (
+        {isWaitingForInput && !awaitingResponse && (
           <div className="border-t border-claro-accent/20 bg-claro-card/50 p-4">
             {currentStepData.type === 'multi-input' ? (
               <div className="space-y-3">
@@ -333,8 +366,14 @@ const Analise = () => {
                   <ClaroButton
                     variant="ghost"
                     onClick={() => {
-                      addMessage('Ainda não tenho', 'user');
-                      proceedToNextStep();
+                      if (!awaitingResponse) {
+                        addMessage('Ainda não tenho', 'user');
+                        setAwaitingResponse(true);
+                        setTimeout(() => {
+                          setAwaitingResponse(false);
+                          proceedToNextStep();
+                        }, 1000);
+                      }
                     }}
                   >
                     Pular
@@ -352,7 +391,7 @@ const Analise = () => {
                 />
                 <ClaroButton
                   onClick={() => handleInputSubmit(currentInput)}
-                  disabled={!currentInput.trim()}
+                  disabled={!currentInput.trim() || awaitingResponse}
                   className="px-6"
                 >
                   Enviar

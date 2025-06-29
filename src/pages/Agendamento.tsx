@@ -1,121 +1,90 @@
 
 import React, { useState } from 'react';
-import { Check, Clock, Calendar, MessageCircle, User, Mail, Phone } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { Calendar, Clock, CheckCircle } from 'lucide-react';
 import ClaroButton from '@/components/ClaroButton';
 import ClaroCard from '@/components/ClaroCard';
-import ClaroInput from '@/components/ClaroInput';
 import { useAppContext } from '@/contexts/AppContext';
 
 const Agendamento = () => {
+  const navigate = useNavigate();
   const { user } = useAppContext();
   const [selectedDate, setSelectedDate] = useState('');
   const [selectedTime, setSelectedTime] = useState('');
-  const [formData, setFormData] = useState({
-    nome: user.nome || '',
-    email: '',
-    telefone: user.whatsapp || '',
-    empresa: '',
-    observacoes: ''
+  const [isScheduled, setIsScheduled] = useState(false);
+
+  // Mock available dates (next 7 days)
+  const availableDates = Array.from({ length: 7 }, (_, i) => {
+    const date = new Date();
+    date.setDate(date.getDate() + i + 1);
+    return {
+      value: date.toISOString().split('T')[0],
+      display: date.toLocaleDateString('pt-BR', { 
+        weekday: 'long', 
+        day: 'numeric', 
+        month: 'long' 
+      })
+    };
   });
-  const [agendado, setAgendado] = useState(false);
 
-  // Datas disponíveis (próximos 7 dias úteis)
-  const getAvailableDates = () => {
-    const dates = [];
-    const today = new Date();
-    let count = 0;
-    let currentDate = new Date(today);
-
-    while (count < 7) {
-      currentDate.setDate(currentDate.getDate() + 1);
-      
-      // Pular fins de semana
-      if (currentDate.getDay() !== 0 && currentDate.getDay() !== 6) {
-        dates.push({
-          date: currentDate.toISOString().split('T')[0],
-          formatted: currentDate.toLocaleDateString('pt-BR', {
-            weekday: 'long',
-            day: 'numeric',
-            month: 'long'
-          })
-        });
-        count++;
-      }
-    }
-    return dates;
-  };
-
+  // Mock available times
   const availableTimes = [
-    '09:00', '09:30', '10:00', '10:30', '11:00', '11:30',
-    '14:00', '14:30', '15:00', '15:30', '16:00', '16:30', '17:00'
+    '09:00', '10:00', '11:00', '14:00', '15:00', '16:00', '17:00'
   ];
 
-  const beneficios = [
-    'Análise detalhada dos seus resultados',
-    'Oportunidades específicas identificadas',
-    'Plano personalizado para seu negócio',
-    'Como automatizar 100% do seu comercial'
-  ];
-
-  const handleInputChange = (field: string, value: string) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
+  const handleSchedule = () => {
+    if (selectedDate && selectedTime) {
+      console.log('[Agendamento] Simulando agendamento para:', selectedDate, selectedTime);
+      setIsScheduled(true);
+      
+      // Simulate API call delay
+      setTimeout(() => {
+        console.log('[Agendamento] Agendamento confirmado');
+      }, 1000);
+    }
   };
 
-  const handleConfirmarAgendamento = () => {
-    console.log('[Agendamento] Confirmando agendamento:', {
-      ...formData,
-      data: selectedDate,
-      horario: selectedTime
-    });
-
-    // Simular confirmação
-    setAgendado(true);
-  };
-
-  const handleWhatsAppDireto = () => {
-    const message = `Olá! Vim do ClaroAI e gostaria de agendar uma conversa estratégica. Meu nome é ${formData.nome} e trabalho com ${user.tipoNegocio}.`;
+  const handleWhatsAppContact = () => {
+    const message = `Olá! Sou ${user.nome || 'um usuário'} e gostaria de agendar uma conversa estratégica sobre minha análise comercial.`;
     const whatsappUrl = `https://wa.me/5511999999999?text=${encodeURIComponent(message)}`;
     window.open(whatsappUrl, '_blank');
   };
 
-  if (agendado) {
+  if (isScheduled) {
     return (
-      <div className="min-h-screen bg-claro-background flex items-center justify-center p-4">
-        <ClaroCard className="max-w-md w-full text-center">
-          <div className="w-16 h-16 bg-claro-success rounded-full flex items-center justify-center mx-auto mb-6">
-            <Check className="h-8 w-8 text-white" />
+      <div className="min-h-screen bg-claro-background flex items-center justify-center px-4">
+        <ClaroCard className="max-w-md mx-auto text-center">
+          <CheckCircle className="w-16 h-16 text-claro-success mx-auto mb-4" />
+          <h2 className="text-2xl font-bold mb-4">Reunião Agendada!</h2>
+          <p className="text-gray-300 mb-2">
+            Sua conversa estratégica foi agendada para:
+          </p>
+          <div className="bg-claro-background/50 rounded-lg p-4 mb-6">
+            <p className="text-claro-accent font-semibold">
+              {availableDates.find(d => d.value === selectedDate)?.display}
+            </p>
+            <p className="text-claro-accent font-semibold">
+              às {selectedTime}
+            </p>
           </div>
-          
-          <h2 className="text-2xl font-bold mb-4">Agendamento Confirmado!</h2>
-          
-          <div className="space-y-3 text-left mb-6">
-            <div className="flex items-center space-x-3">
-              <Calendar className="h-5 w-5 text-claro-accent" />
-              <span>{getAvailableDates().find(d => d.date === selectedDate)?.formatted}</span>
-            </div>
-            <div className="flex items-center space-x-3">
-              <Clock className="h-5 w-5 text-claro-accent" />
-              <span>{selectedTime}</span>
-            </div>
-            <div className="flex items-center space-x-3">
-              <User className="h-5 w-5 text-claro-accent" />
-              <span>{formData.nome}</span>
-            </div>
+          <p className="text-sm text-gray-400 mb-6">
+            * Integração Calendly será ativada na versão final
+          </p>
+          <div className="space-y-3">
+            <ClaroButton 
+              onClick={() => navigate('/dashboard')}
+              className="w-full"
+            >
+              Voltar ao Dashboard
+            </ClaroButton>
+            <ClaroButton 
+              onClick={handleWhatsAppContact}
+              variant="ghost"
+              className="w-full"
+            >
+              Falar no WhatsApp
+            </ClaroButton>
           </div>
-
-          <div className="bg-claro-background/50 p-4 rounded-lg mb-6">
-            <h3 className="font-semibold mb-2">Próximos Passos:</h3>
-            <ul className="text-sm text-gray-400 space-y-1">
-              <li>✅ Confirmação enviada para seu e-mail</li>
-              <li>✅ Link da reunião no WhatsApp</li>
-              <li>✅ Lembrete 1h antes</li>
-            </ul>
-          </div>
-
-          <ClaroButton onClick={handleWhatsAppDireto} className="w-full">
-            <MessageCircle className="h-4 w-4 mr-2" />
-            Confirmar no WhatsApp
-          </ClaroButton>
         </ClaroCard>
       </div>
     );
@@ -126,194 +95,142 @@ const Agendamento = () => {
       {/* Header */}
       <header className="border-b border-claro-accent/20 bg-claro-card/50 backdrop-blur-claro">
         <div className="container mx-auto px-4 py-6">
-          <div className="flex items-center space-x-2">
-            <div className="w-8 h-8 bg-claro-gradient rounded-lg flex items-center justify-center">
-              <span className="text-white font-bold text-sm">AI</span>
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-2xl font-bold">Agendar Conversa Estratégica</h1>
+              <p className="text-gray-400">15 minutos para mostrar como podemos 3x suas vendas</p>
             </div>
-            <span className="text-xl font-bold claro-text-gradient">ClaroAI</span>
+            <ClaroButton 
+              variant="ghost" 
+              onClick={() => navigate('/dashboard')}
+            >
+              Voltar
+            </ClaroButton>
           </div>
         </div>
       </header>
 
       <div className="container mx-auto px-4 py-8">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 max-w-6xl mx-auto">
-          {/* Lado Esquerdo - Benefícios */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          {/* Benefits */}
           <div className="space-y-6">
-            <div>
-              <h1 className="text-claro-h2 font-bold mb-4">
-                Conversa Estratégica <span className="claro-text-gradient">Gratuita</span>
-              </h1>
-              <p className="text-xl text-gray-300">
-                15 minutos para mostrar como podemos <strong className="text-claro-accent">3x suas vendas</strong>
-              </p>
-            </div>
-
             <ClaroCard>
               <h3 className="text-xl font-semibold mb-4">O que vamos discutir:</h3>
               <ul className="space-y-3">
-                {beneficios.map((beneficio, index) => (
-                  <li key={index} className="flex items-center space-x-3">
-                    <div className="w-6 h-6 bg-claro-success rounded-full flex items-center justify-center">
-                      <Check className="h-4 w-4 text-white" />
-                    </div>
-                    <span>{beneficio}</span>
-                  </li>
-                ))}
+                <li className="flex items-start gap-3">
+                  <CheckCircle className="w-5 h-5 text-claro-success mt-0.5" />
+                  <span>Análise detalhada dos seus resultados</span>
+                </li>
+                <li className="flex items-start gap-3">
+                  <CheckCircle className="w-5 h-5 text-claro-success mt-0.5" />
+                  <span>Oportunidades específicas identificadas</span>
+                </li>
+                <li className="flex items-start gap-3">
+                  <CheckCircle className="w-5 h-5 text-claro-success mt-0.5" />
+                  <span>Plano personalizado para seu negócio</span>
+                </li>
+                <li className="flex items-start gap-3">
+                  <CheckCircle className="w-5 h-5 text-claro-success mt-0.5" />
+                  <span>Como automatizar 100% do seu comercial</span>
+                </li>
               </ul>
             </ClaroCard>
 
-            <ClaroCard gradient>
-              <div className="text-center">
-                <div className="text-4xl mb-3">🚀</div>
-                <blockquote className="text-lg italic mb-4">
-                  "Em 30 dias aumentei 60% as vendas seguindo o método apresentado na conversa"
-                </blockquote>
-                <div className="flex items-center justify-center space-x-2">
-                  <div className="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center">
-                    <span className="text-sm">👨‍💼</span>
-                  </div>
-                  <div className="text-left">
-                    <p className="font-semibold">Carlos Silva</p>
-                    <p className="text-sm opacity-80">Consultor Empresarial</p>
-                  </div>
-                </div>
-              </div>
+            <ClaroCard>
+              <blockquote className="text-center">
+                <p className="text-lg text-gray-300 mb-4 italic">
+                  "Em 30 dias aumentei 60% as vendas após a conversa estratégica"
+                </p>
+                <footer className="text-claro-accent font-semibold">
+                  - Cliente Real
+                </footer>
+              </blockquote>
             </ClaroCard>
-
-            <div className="text-center">
-              <p className="text-gray-400 mb-4">Prefere falar direto no WhatsApp?</p>
-              <ClaroButton onClick={handleWhatsAppDireto} variant="secondary" className="w-full">
-                <MessageCircle className="h-4 w-4 mr-2" />
-                Falar com Especialista Agora
-              </ClaroButton>
-            </div>
           </div>
 
-          {/* Lado Direito - Formulário de Agendamento */}
+          {/* Scheduling */}
           <div className="space-y-6">
             <ClaroCard>
-              <h3 className="text-xl font-semibold mb-6">Agendar Conversa</h3>
-
-              {/* Seleção de Data */}
-              <div className="mb-6">
-                <h4 className="font-medium mb-3">Escolha a data:</h4>
-                <div className="grid grid-cols-1 gap-2">
-                  {getAvailableDates().map((date) => (
-                    <button
-                      key={date.date}
-                      onClick={() => setSelectedDate(date.date)}
-                      className={`p-3 rounded-lg text-left transition-all duration-300 capitalize ${
-                        selectedDate === date.date
-                          ? 'bg-claro-gradient text-white'
-                          : 'bg-claro-background/50 hover:bg-claro-accent/10 border border-claro-accent/20'
-                      }`}
-                    >
-                      {date.formatted}
-                    </button>
-                  ))}
-                </div>
+              <h3 className="text-xl font-semibold mb-6 flex items-center gap-2">
+                <Calendar className="w-6 h-6 text-claro-accent" />
+                Escolha uma data
+              </h3>
+              
+              <div className="grid grid-cols-1 gap-2 mb-6">
+                {availableDates.map((date) => (
+                  <button
+                    key={date.value}
+                    onClick={() => setSelectedDate(date.value)}
+                    className={`p-3 rounded-lg text-left transition-all duration-300 ${
+                      selectedDate === date.value
+                        ? 'bg-claro-gradient text-white'
+                        : 'bg-claro-background/50 text-gray-300 hover:bg-claro-accent/10'
+                    }`}
+                  >
+                    {date.display}
+                  </button>
+                ))}
               </div>
 
-              {/* Seleção de Horário */}
               {selectedDate && (
-                <div className="mb-6 animate-fade-in">
-                  <h4 className="font-medium mb-3">Escolha o horário:</h4>
-                  <div className="grid grid-cols-3 gap-2">
+                <>
+                  <h4 className="text-lg font-semibold mb-4 flex items-center gap-2">
+                    <Clock className="w-5 h-5 text-claro-accent" />
+                    Escolha um horário
+                  </h4>
+                  
+                  <div className="grid grid-cols-3 gap-2 mb-6">
                     {availableTimes.map((time) => (
                       <button
                         key={time}
                         onClick={() => setSelectedTime(time)}
-                        className={`p-2 rounded-lg text-sm transition-all duration-300 ${
+                        className={`p-2 rounded-lg text-center transition-all duration-300 ${
                           selectedTime === time
                             ? 'bg-claro-gradient text-white'
-                            : 'bg-claro-background/50 hover:bg-claro-accent/10 border border-claro-accent/20'
+                            : 'bg-claro-background/50 text-gray-300 hover:bg-claro-accent/10'
                         }`}
                       >
                         {time}
                       </button>
                     ))}
                   </div>
-                </div>
+                </>
               )}
 
-              {/* Formulário */}
               {selectedDate && selectedTime && (
-                <div className="space-y-4 animate-fade-in">
-                  <ClaroInput
-                    label="Nome completo"
-                    value={formData.nome}
-                    onChange={(e) => handleInputChange('nome', e.target.value)}
-                    placeholder="Seu nome completo"
-                  />
-
-                  <ClaroInput
-                    label="E-mail"
-                    type="email"
-                    value={formData.email}
-                    onChange={(e) => handleInputChange('email', e.target.value)}
-                    placeholder="seu@email.com"
-                  />
-
-                  <ClaroInput
-                    label="WhatsApp"
-                    value={formData.telefone}
-                    onChange={(e) => handleInputChange('telefone', e.target.value)}
-                    placeholder="(11) 99999-9999"
-                  />
-
-                  <ClaroInput
-                    label="Empresa/Negócio"
-                    value={formData.empresa}
-                    onChange={(e) => handleInputChange('empresa', e.target.value)}
-                    placeholder="Nome da sua empresa"
-                  />
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-300 mb-2">
-                      Observações (opcional)
-                    </label>
-                    <textarea
-                      className="w-full px-4 py-3 bg-claro-card/50 border border-claro-accent/30 rounded-claro text-white placeholder-gray-400 focus:border-claro-accent focus:ring-2 focus:ring-claro-accent/20 focus:outline-none transition-all duration-300 resize-none"
-                      rows={3}
-                      value={formData.observacoes}
-                      onChange={(e) => handleInputChange('observacoes', e.target.value)}
-                      placeholder="Conte um pouco sobre seu principal desafio..."
-                    />
+                <div className="space-y-4">
+                  <div className="bg-claro-background/50 rounded-lg p-4">
+                    <h5 className="font-semibold text-claro-accent mb-2">Resumo do Agendamento:</h5>
+                    <p className="text-gray-300">
+                      {availableDates.find(d => d.value === selectedDate)?.display}
+                    </p>
+                    <p className="text-gray-300">às {selectedTime}</p>
                   </div>
-
+                  
                   <ClaroButton
-                    onClick={handleConfirmarAgendamento}
+                    onClick={handleSchedule}
                     className="w-full"
-                    disabled={!formData.nome || !formData.email || !formData.telefone}
+                    size="lg"
                   >
-                    <Calendar className="h-4 w-4 mr-2" />
                     Confirmar Agendamento
                   </ClaroButton>
-
+                  
                   <p className="text-xs text-gray-400 text-center">
-                    ✅ Sem compromisso • ✅ 100% gratuito • ✅ Cancelamento fácil
+                    * Integração Calendly será ativada na versão final
                   </p>
                 </div>
               )}
             </ClaroCard>
 
-            {/* Informações de Contato */}
             <ClaroCard>
-              <h4 className="font-semibold mb-4">Informações da Reunião</h4>
-              <div className="space-y-3 text-sm">
-                <div className="flex items-center space-x-3">
-                  <Clock className="h-4 w-4 text-claro-accent" />
-                  <span>Duração: 15-20 minutos</span>
-                </div>
-                <div className="flex items-center space-x-3">
-                  <MessageCircle className="h-4 w-4 text-claro-accent" />
-                  <span>Via Google Meet ou WhatsApp</span>
-                </div>
-                <div className="flex items-center space-x-3">
-                  <User className="h-4 w-4 text-claro-accent" />
-                  <span>Com especialista certificado</span>
-                </div>
-              </div>
+              <h4 className="font-semibold mb-3">Prefere falar agora?</h4>
+              <ClaroButton
+                onClick={handleWhatsAppContact}
+                variant="secondary"
+                className="w-full"
+              >
+                Chamar no WhatsApp
+              </ClaroButton>
             </ClaroCard>
           </div>
         </div>

@@ -42,12 +42,20 @@ const Index = () => {
     { letra: 'O', titulo: 'Otimização Contínua', icon: <TrendingUp className="h-6 w-6" />, descricao: 'Melhorias constantes baseadas em dados' }
   ];
 
-  const demonstracao = [
-    { titulo: "Pesquisa de Mercado Visual", descricao: "Análise completa do seu nicho com dados visuais", icone: "📊" },
-    { titulo: "Análise Posicionamento Digital", descricao: "Score detalhado do Instagram, Google e site", icone: "🔍" },
-    { titulo: "5 Anúncios Prontos para Usar", descricao: "Campanhas personalizadas para seu negócio", icone: "🚀" },
-    { titulo: "Seu ICP Ideal Detalhado", descricao: "Persona completa com dores e canais", icone: "👥" }
-  ];
+  // Mock Instagram data for demonstration
+  const instagramMockData = {
+    profilePic: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=80&h=80&fit=crop&crop=face&auto=format",
+    followers: "1.2K",
+    following: "890",
+    posts: "156",
+    lastPosts: [
+      "https://images.unsplash.com/photo-1611224923853-80b023f02d71?w=100&h=100&fit=crop&auto=format",
+      "https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=100&h=100&fit=crop&auto=format",
+      "https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=100&h=100&fit=crop&auto=format"
+    ],
+    engagement: "7.3%",
+    score: "75/100"
+  };
 
   const depoimentos = [
     {
@@ -122,54 +130,45 @@ const Index = () => {
               Gerar Minha Análise Gratuita
             </ClaroButton>
 
-            {/* Mockup Dashboard */}
-            <div className="relative max-w-5xl mx-auto mt-16">
-              <div className="claro-glass rounded-2xl p-8 animate-slide-up">
-                <div className="bg-claro-background rounded-lg p-6">
-                  <div className="flex items-center justify-between mb-6">
-                    <h3 className="text-xl font-semibold">Dashboard ClaroAI</h3>
-                    <div className="flex items-center space-x-2">
-                      <div className="w-3 h-3 bg-red-500 rounded-full"></div>
-                      <div className="w-3 h-3 bg-yellow-500 rounded-full"></div>
-                      <div className="w-3 h-3 bg-green-500 rounded-full"></div>
+            {/* Instagram Analysis Preview */}
+            <div className="max-w-3xl mx-auto mt-12">
+              <h3 className="text-xl font-semibold mb-6 text-claro-accent">Análise Prévia do Instagram</h3>
+              <ClaroCard className="p-6">
+                <div className="flex items-center gap-4 mb-6">
+                  <img 
+                    src={instagramMockData.profilePic} 
+                    alt="Profile" 
+                    className="w-16 h-16 rounded-full object-cover"
+                  />
+                  <div className="text-left">
+                    <h4 className="text-lg font-semibold">@seuperfil</h4>
+                    <div className="flex gap-4 text-sm text-gray-400">
+                      <span>{instagramMockData.followers} seguidores</span>
+                      <span>{instagramMockData.following} seguindo</span>
+                      <span>{instagramMockData.posts} posts</span>
                     </div>
-                  </div>
-                  
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-                    <div className="bg-claro-card rounded-lg p-4">
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <p className="text-gray-400 text-sm">Score Geral</p>
-                          <p className="text-2xl font-bold text-claro-accent">78/100</p>
-                        </div>
-                        <BarChart className="h-8 w-8 text-claro-accent" />
-                      </div>
-                    </div>
-                    <div className="bg-claro-card rounded-lg p-4">
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <p className="text-gray-400 text-sm">Leads/Mês</p>
-                          <p className="text-2xl font-bold text-claro-success">+247%</p>
-                        </div>
-                        <TrendingUp className="h-8 w-8 text-claro-success" />
-                      </div>
-                    </div>
-                    <div className="bg-claro-card rounded-lg p-4">
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <p className="text-gray-400 text-sm">ROI</p>
-                          <p className="text-2xl font-bold text-claro-warning">R$ 24.5k</p>
-                        </div>
-                        <Target className="h-8 w-8 text-claro-warning" />
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="h-32 bg-gradient-to-r from-claro-primary/20 to-claro-accent/20 rounded-lg flex items-center justify-center">
-                    <p className="text-gray-400">Gráfico de Performance</p>
                   </div>
                 </div>
-              </div>
+                
+                <div className="mb-4">
+                  <h5 className="text-sm font-medium text-claro-accent mb-2">Últimos Posts:</h5>
+                  <div className="flex gap-2 justify-center">
+                    {instagramMockData.lastPosts.map((post, i) => (
+                      <img key={i} src={post} alt={`Post ${i+1}`} className="w-16 h-16 rounded object-cover" />
+                    ))}
+                  </div>
+                </div>
+                
+                <div className="text-center">
+                  <div className="mb-2">
+                    <span className="text-2xl font-bold text-claro-success">{instagramMockData.score}</span>
+                    <span className="text-gray-400 ml-2">Score Geral</span>
+                  </div>
+                  <div className="text-claro-accent">
+                    Engajamento: {instagramMockData.engagement}
+                  </div>
+                </div>
+              </ClaroCard>
             </div>
           </div>
         </div>

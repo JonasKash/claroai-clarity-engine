@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { BarChart, Target, TrendingUp, Users, FileText, Instagram, Globe, Mail, Linkedin } from 'lucide-react';
@@ -129,8 +128,8 @@ const Dashboard = () => {
           </nav>
         </div>
 
-        {/* Content */}
-        <div className="flex-1 p-6">
+        {/* Content - with proper bottom padding for CTA */}
+        <div className="flex-1 p-6 pb-48">
           {currentSection === 'pesquisa' && (
             <div className="space-y-6 animate-fade-in">
               <h2 className="text-claro-h2 font-bold mb-6">Pesquisa de Mercado</h2>
@@ -349,8 +348,8 @@ const Dashboard = () => {
         </div>
       </div>
 
-      {/* Footer Fixo */}
-      <div className="fixed bottom-0 left-0 right-0 bg-claro-gradient p-4 border-t border-claro-accent/20">
+      {/* Fixed CTA - Properly positioned without overlapping */}
+      <div className="relative bottom-0 left-0 right-0 bg-claro-gradient p-4 mt-8 border-t border-claro-accent/20">
         <div className="container mx-auto">
           <ClaroCard gradient className="text-center">
             <h3 className="text-lg font-semibold mb-2">
@@ -367,8 +366,6 @@ const Dashboard = () => {
           </ClaroCard>
         </div>
       </div>
-
-      <div className="h-32"></div>
     </div>
   );
 };
