@@ -1,10 +1,10 @@
-
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Calendar, Clock, CheckCircle } from 'lucide-react';
 import ClaroButton from '@/components/ClaroButton';
 import ClaroCard from '@/components/ClaroCard';
 import { useAppContext } from '@/contexts/AppContext';
+import CalendlyWidget from '@/components/CalendlyWidget';
 
 const Agendamento = () => {
   const navigate = useNavigate();
@@ -153,73 +153,9 @@ const Agendamento = () => {
             <ClaroCard>
               <h3 className="text-xl font-semibold mb-6 flex items-center gap-2">
                 <Calendar className="w-6 h-6 text-claro-accent" />
-                Escolha uma data
+                Agende sua conversa estratégica
               </h3>
-              
-              <div className="grid grid-cols-1 gap-2 mb-6">
-                {availableDates.map((date) => (
-                  <button
-                    key={date.value}
-                    onClick={() => setSelectedDate(date.value)}
-                    className={`p-3 rounded-lg text-left transition-all duration-300 ${
-                      selectedDate === date.value
-                        ? 'bg-claro-gradient text-white'
-                        : 'bg-claro-background/50 text-gray-300 hover:bg-claro-accent/10'
-                    }`}
-                  >
-                    {date.display}
-                  </button>
-                ))}
-              </div>
-
-              {selectedDate && (
-                <>
-                  <h4 className="text-lg font-semibold mb-4 flex items-center gap-2">
-                    <Clock className="w-5 h-5 text-claro-accent" />
-                    Escolha um horário
-                  </h4>
-                  
-                  <div className="grid grid-cols-3 gap-2 mb-6">
-                    {availableTimes.map((time) => (
-                      <button
-                        key={time}
-                        onClick={() => setSelectedTime(time)}
-                        className={`p-2 rounded-lg text-center transition-all duration-300 ${
-                          selectedTime === time
-                            ? 'bg-claro-gradient text-white'
-                            : 'bg-claro-background/50 text-gray-300 hover:bg-claro-accent/10'
-                        }`}
-                      >
-                        {time}
-                      </button>
-                    ))}
-                  </div>
-                </>
-              )}
-
-              {selectedDate && selectedTime && (
-                <div className="space-y-4">
-                  <div className="bg-claro-background/50 rounded-lg p-4">
-                    <h5 className="font-semibold text-claro-accent mb-2">Resumo do Agendamento:</h5>
-                    <p className="text-gray-300">
-                      {availableDates.find(d => d.value === selectedDate)?.display}
-                    </p>
-                    <p className="text-gray-300">às {selectedTime}</p>
-                  </div>
-                  
-                  <ClaroButton
-                    onClick={handleSchedule}
-                    className="w-full"
-                    size="lg"
-                  >
-                    Confirmar Agendamento
-                  </ClaroButton>
-                  
-                  <p className="text-xs text-gray-400 text-center">
-                    * Integração Calendly será ativada na versão final
-                  </p>
-                </div>
-              )}
+              <CalendlyWidget />
             </ClaroCard>
 
             <ClaroCard>

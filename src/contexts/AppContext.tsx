@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState, ReactNode } from 'react';
 
 interface User {
@@ -48,8 +47,8 @@ interface AppContextType {
   setUser: (user: Partial<User>) => void;
   analise: Analise | null;
   setAnalise: (analise: Analise) => void;
-  currentStep: 'landing' | 'formulario' | 'dashboard' | 'agendamento';
-  setCurrentStep: (step: 'landing' | 'formulario' | 'dashboard' | 'agendamento') => void;
+  currentStep: 'landing' | 'formulario' | 'dashboard' | 'agendamento' | 'analise';
+  setCurrentStep: (step: 'landing' | 'formulario' | 'dashboard' | 'agendamento' | 'analise') => void;
   formProgress: number;
   setFormProgress: (progress: number) => void;
 }
@@ -78,7 +77,7 @@ export const AppProvider: React.FC<{ children: ReactNode }> = ({ children }) => 
   });
 
   const [analise, setAnalise] = useState<Analise | null>(null);
-  const [currentStep, setCurrentStep] = useState<'landing' | 'formulario' | 'dashboard' | 'agendamento'>('landing');
+  const [currentStep, setCurrentStep] = useState<'landing' | 'formulario' | 'dashboard' | 'agendamento' | 'analise'>('landing');
   const [formProgress, setFormProgress] = useState(0);
 
   const setUser = (userData: Partial<User>) => {

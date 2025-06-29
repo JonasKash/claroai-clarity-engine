@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Send, Bot, User } from 'lucide-react';
@@ -125,14 +124,19 @@ const Analise = () => {
       id: 'analyzing',
       type: 'bot',
       message: 'Perfeito! 🎯 Agora vou analisar tudo...',
-      delay: 2000,
-      showLoading: true
+      delay: 2000
     },
     {
-      id: 'complete',
+      id: 'complete-message',
       type: 'bot',
       message: 'Análise concluída! Encontrei insights poderosos sobre seu negócio. 🚀',
-      delay: 3000,
+      delay: 0
+    },
+    {
+      id: 'complete-button',
+      type: 'bot',
+      message: '',
+      delay: 1000,
       showButton: true,
       buttonText: 'Ver Minha Análise Completa',
       buttonAction: 'complete'
@@ -142,9 +146,18 @@ const Analise = () => {
   // Initialize chat
   useEffect(() => {
     console.log('[Analise] Component mounted, starting chat');
+    console.log('[Analise] Chat started:', chatStarted);
+    console.log('[Analise] Current step index:', currentStepIndex);
+    
     if (!chatStarted) {
+      console.log('[Analise] Initializing chat...');
       setChatStarted(true);
-      processNextStep(0);
+      setCurrentStepIndex(0);
+      setAwaitingResponse(false);
+      // Start the first step immediately
+      setTimeout(() => {
+        processNextStep(0);
+      }, 100);
     }
   }, []);
 
@@ -158,6 +171,7 @@ const Analise = () => {
     }
 
     const step = chatFlow[stepIndex];
+    console.log(`[Analise] Step data:`, step);
     
     setTimeout(() => {
       setIsTyping(true);
@@ -174,17 +188,30 @@ const Analise = () => {
           message = message.replace('{nome}', userData.nome || '');
         }
         
-        setMessages(prev => [...prev, {
-          ...step,
-          message,
-          timestamp: new Date()
-        }]);
+        // Só adiciona mensagem se não for vazia
+        if (message && message.trim() !== '') {
+          setMessages(prev => [...prev, {
+            ...step,
+            message,
+            timestamp: new Date()
+          }]);
+        }
         
-        setAwaitingResponse(step.inputType ? true : false);
+        // Set awaiting response based on step type
+        const needsInput = step.inputType && !step.showButton;
+        setAwaitingResponse(needsInput);
+        console.log(`[Analise] Step ${stepIndex} - needsInput: ${needsInput}, awaitingResponse set to: ${needsInput}`);
         
-        // If step doesn't require input, move to next step
-        if (!step.inputType && !step.showButton && !step.showLoading) {
-          setCurrentStepIndex(stepIndex + 1);
+        // Handle auto-advancing steps
+        if (!needsInput) {
+          // Só avança se não for o último passo
+          if (stepIndex < chatFlow.length - 1) {
+            setTimeout(() => {
+              console.log(`[Analise] Auto-advancing from step ${stepIndex}`);
+              setCurrentStepIndex(stepIndex + 1);
+              processNextStep(stepIndex + 1);
+            }, 1000);
+          }
         }
       }, 1500);
     }, step.delay || 0);
@@ -192,8 +219,11 @@ const Analise = () => {
 
   // Handle sending message
   const handleSendMessage = (value) => {
+    console.log(`[Analise] handleSendMessage called with: ${value}`);
+    console.log(`[Analise] awaitingResponse: ${awaitingResponse}, currentStepIndex: ${currentStepIndex}`);
+    
     if (awaitingResponse && currentStepIndex < chatFlow.length) {
-      console.log(`[Analise] Message sent: ${value}`);
+      console.log(`[Analise] Processing user message: ${value}`);
       
       const currentStepData = chatFlow[currentStepIndex];
       
@@ -210,6 +240,14 @@ const Analise = () => {
         newUserData[currentStepData.field] = value;
         setUserData(newUserData);
         setUser(newUserData);
+        console.log(`[Analise] Updated user data for field ${currentStepData.field}:`, value);
+        // Se for nome ou whatsapp/email, salva no localStorage
+        if (currentStepData.field === 'nome') {
+          localStorage.setItem('claroai_nome', value);
+        }
+        if (currentStepData.field === 'whatsapp' || currentStepData.field === 'email') {
+          localStorage.setItem('claroai_email', value);
+        }
       }
 
       setCurrentInput('');
@@ -217,22 +255,29 @@ const Analise = () => {
       
       // Move to next step
       const nextStepIndex = currentStepIndex + 1;
+      console.log(`[Analise] Moving to next step: ${nextStepIndex}`);
       setCurrentStepIndex(nextStepIndex);
       
       // Process next step after a short delay
       setTimeout(() => {
         processNextStep(nextStepIndex);
       }, 500);
+    } else {
+      console.log(`[Analise] Cannot send message - awaitingResponse: ${awaitingResponse}, currentStepIndex: ${currentStepIndex}`);
     }
   };
 
   const handleOptionClick = (option) => {
+    console.log(`[Analise] handleOptionClick called with: ${option}`);
     if (awaitingResponse) {
       handleSendMessage(option);
+    } else {
+      console.log(`[Analise] Cannot handle option click - not awaiting response`);
     }
   };
 
   const handleButtonClick = (action) => {
+    console.log(`[Analise] handleButtonClick called with action: ${action}`);
     if (action === 'complete') {
       console.log('[Analise] Redirecting to dashboard');
       setCurrentStep('dashboard');
@@ -241,10 +286,17 @@ const Analise = () => {
   };
 
   const renderInput = () => {
-    if (currentStepIndex >= chatFlow.length) return null;
+    console.log(`[Analise] renderInput - currentStepIndex: ${currentStepIndex}, awaitingResponse: ${awaitingResponse}`);
+    
+    if (currentStepIndex >= chatFlow.length) {
+      console.log('[Analise] Chat flow completed, no input needed');
+      return null;
+    }
     
     const step = chatFlow[currentStepIndex];
+    console.log(`[Analise] Current step:`, step);
     
+    // Show button if step has showButton
     if (step.showButton) {
       return (
         <div className="p-4 border-t border-claro-accent/20">
@@ -259,6 +311,7 @@ const Analise = () => {
       );
     }
 
+    // Show options if step has options and awaiting response
     if (step.inputType === 'options' && awaitingResponse) {
       return (
         <div className="p-4 border-t border-claro-accent/20">
@@ -277,16 +330,30 @@ const Analise = () => {
       );
     }
 
-    if (step.inputType && step.inputType !== 'options' && awaitingResponse && !step.showButton && !step.showLoading) {
+    // Show text input if step has inputType and awaiting response
+    if (step.inputType && step.inputType !== 'options' && awaitingResponse) {
+      // Se for o passo do Instagram e o input estiver vazio, preenche com '@'
+      const isInstagramStep = step.id === 'instagram';
+      const inputValue = isInstagramStep && currentInput === '' ? '@' : currentInput;
       return (
         <div className="p-4 border-t border-claro-accent/20">
           <div className="flex gap-3">
             <input
               type={step.inputType}
-              value={currentInput}
-              onChange={(e) => setCurrentInput(e.target.value)}
+              value={inputValue}
+              onChange={(e) => {
+                let value = e.target.value;
+                // Garante que o @ não seja removido
+                if (isInstagramStep && !value.startsWith('@')) {
+                  value = '@' + value.replace(/^@+/, '');
+                }
+                setCurrentInput(value);
+              }}
+              onFocus={() => {
+                if (isInstagramStep && currentInput === '') setCurrentInput('@');
+              }}
               onKeyPress={(e) => {
-                if (e.key === 'Enter' && currentInput.trim()) {
+                if (e.key === 'Enter' && currentInput.trim() && (!isInstagramStep || currentInput.trim() !== '@')) {
                   handleSendMessage(currentInput.trim());
                 }
               }}
@@ -295,8 +362,8 @@ const Analise = () => {
               autoFocus
             />
             <button
-              onClick={() => currentInput.trim() && handleSendMessage(currentInput.trim())}
-              disabled={!currentInput.trim()}
+              onClick={() => currentInput.trim() && (!isInstagramStep || currentInput.trim() !== '@') && handleSendMessage(currentInput.trim())}
+              disabled={!currentInput.trim() || (isInstagramStep && currentInput.trim() === '@')}
               className="bg-claro-gradient hover:bg-claro-gradient-reverse disabled:bg-gray-600 text-white p-3 rounded-lg transition-colors"
             >
               <Send className="w-5 h-5" />
@@ -306,6 +373,7 @@ const Analise = () => {
       );
     }
 
+    console.log('[Analise] No input rendered - step does not require input or not awaiting response');
     return null;
   };
 
@@ -352,16 +420,8 @@ const Analise = () => {
                       ? 'bg-claro-gradient text-white'
                       : 'claro-glass text-gray-100'
                   }`}>
-                    <p className="text-sm leading-relaxed">{message.message}</p>
-                    {message.showLoading && (
-                      <div className="flex items-center gap-2 mt-3">
-                        <div className="flex space-x-1">
-                          <div className="w-2 h-2 bg-claro-accent rounded-full animate-bounce"></div>
-                          <div className="w-2 h-2 bg-claro-accent rounded-full animate-bounce" style={{animationDelay: '0.1s'}}></div>
-                          <div className="w-2 h-2 bg-claro-accent rounded-full animate-bounce" style={{animationDelay: '0.2s'}}></div>
-                        </div>
-                        <span className="text-xs text-claro-accent">Analisando...</span>
-                      </div>
+                    {message.message && (
+                      <p className="text-sm leading-relaxed">{message.message}</p>
                     )}
                   </div>
                 </div>
