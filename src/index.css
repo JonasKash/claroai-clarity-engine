@@ -1,10 +1,11 @@
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
-All colors MUST be HSL.
-*/
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
+/* ClaroAI Design System - All colors MUST be HSL */
 
 @layer base {
   :root {
@@ -37,22 +38,6 @@ All colors MUST be HSL.
     --ring: 222.2 84% 4.9%;
 
     --radius: 0.5rem;
-
-    --sidebar-background: 0 0% 98%;
-
-    --sidebar-foreground: 240 5.3% 26.1%;
-
-    --sidebar-primary: 240 5.9% 10%;
-
-    --sidebar-primary-foreground: 0 0% 98%;
-
-    --sidebar-accent: 240 4.8% 95.9%;
-
-    --sidebar-accent-foreground: 240 5.9% 10%;
-
-    --sidebar-border: 220 13% 91%;
-
-    --sidebar-ring: 217.2 91.2% 59.8%;
   }
 
   .dark {
@@ -83,14 +68,6 @@ All colors MUST be HSL.
     --border: 217.2 32.6% 17.5%;
     --input: 217.2 32.6% 17.5%;
     --ring: 212.7 26.8% 83.9%;
-    --sidebar-background: 240 5.9% 10%;
-    --sidebar-foreground: 240 4.8% 95.9%;
-    --sidebar-primary: 224.3 76.3% 48%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 240 3.7% 15.9%;
-    --sidebar-accent-foreground: 240 4.8% 95.9%;
-    --sidebar-border: 240 3.7% 15.9%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
   }
 }
 
@@ -100,6 +77,54 @@ All colors MUST be HSL.
   }
 
   body {
-    @apply bg-background text-foreground;
+    @apply bg-claro-background text-white font-['Inter'];
   }
+
+  html {
+    scroll-behavior: smooth;
+  }
+}
+
+@layer components {
+  .claro-glass {
+    @apply bg-claro-card/80 backdrop-blur-claro border border-claro-accent/20;
+  }
+
+  .claro-hover-scale {
+    @apply transition-transform duration-300 hover:scale-105;
+  }
+
+  .claro-text-gradient {
+    @apply bg-gradient-to-r from-claro-accent to-claro-primary bg-clip-text text-transparent;
+  }
+
+  .claro-button-primary {
+    @apply bg-claro-gradient hover:bg-claro-gradient-reverse text-white font-semibold py-3 px-6 rounded-claro shadow-claro transition-all duration-300 hover:shadow-claro-lg hover:scale-105;
+  }
+
+  .claro-button-secondary {
+    @apply bg-transparent border-2 border-claro-accent text-claro-accent hover:bg-claro-accent hover:text-white font-semibold py-3 px-6 rounded-claro transition-all duration-300;
+  }
+
+  .claro-card {
+    @apply claro-glass rounded-claro p-6 shadow-claro hover:shadow-claro-lg transition-all duration-300;
+  }
+}
+
+/* Scrollbar customization */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #1A1B3A;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #6B46C1;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #8B5CF6;
 }
