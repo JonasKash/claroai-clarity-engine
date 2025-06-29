@@ -11,7 +11,7 @@ import { generateMockAnalysis, BusinessAnalysis } from '@/utils/mockData';
 
 const Dashboard = () => {
   const navigate = useNavigate();
-  const { user, analise, setAnalise, setCurrentStep } = useAppContext();
+  const { user, setCurrentStep } = useAppContext();
   const [currentSection, setCurrentSection] = useState('pesquisa');
   const [loading, setLoading] = useState(true);
   const [richAnalysis, setRichAnalysis] = useState<BusinessAnalysis | null>(null);
@@ -22,10 +22,9 @@ const Dashboard = () => {
     setTimeout(() => {
       const newAnalysis = generateMockAnalysis(user);
       setRichAnalysis(newAnalysis);
-      setAnalise(newAnalysis);
       setLoading(false);
     }, 2000);
-  }, [user, setAnalise]);
+  }, [user]);
 
   const handleAgendarConversa = () => {
     console.log('[Dashboard] Redirecionando para agendamento');
@@ -139,7 +138,7 @@ const Dashboard = () => {
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
                 <ClaroCard>
                   <h3 className="font-semibold text-gray-300 mb-2">Tamanho do Mercado</h3>
-                  <p className="text-2xl font-bold text-claro-success">{richAnalysis.mercado.tamanhoMercado}</p>
+                  <p className="text-2xl font-bold text-claro-success">{richAnalysis.mercado.tamanho}</p>
                 </ClaroCard>
                 
                 <ClaroCard>
