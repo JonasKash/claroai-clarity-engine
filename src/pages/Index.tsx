@@ -1,9 +1,9 @@
-
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { BarChart, Target, TrendingUp, Users, FileText, ArrowDown } from 'lucide-react';
 import ClaroButton from '@/components/ClaroButton';
 import ClaroCard from '@/components/ClaroCard';
+import InteractiveDashboard from '@/components/InteractiveDashboard';
 import { useAppContext } from '@/contexts/AppContext';
 
 const Index = () => {
@@ -117,7 +117,7 @@ const Index = () => {
             <ClaroButton 
               onClick={handleStartAnalysis}
               size="lg"
-              className="mb-8 text-xl px-12 py-4"
+              className="mb-8 text-xl px-12 py-4 hover:scale-105 transition-transform"
             >
               Gerar Minha Análise Gratuita
             </ClaroButton>
@@ -186,7 +186,7 @@ const Index = () => {
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto">
             {problemas.map((problema, index) => (
-              <ClaroCard key={index} className="text-center">
+              <ClaroCard key={index} className="text-center hover:scale-105 transition-transform duration-300">
                 <div className="mb-4 flex justify-center">
                   {problema.icon}
                 </div>
@@ -214,7 +214,7 @@ const Index = () => {
             <div className="grid grid-cols-1 md:grid-cols-5 gap-8">
               {metodoCLARO.map((item, index) => (
                 <div key={index} className="relative">
-                  <ClaroCard className="text-center h-full">
+                  <ClaroCard className="text-center h-full hover:scale-105 transition-transform duration-300">
                     <div className="w-16 h-16 bg-claro-gradient rounded-full flex items-center justify-center mx-auto mb-4">
                       <span className="text-2xl font-bold">{item.letra}</span>
                     </div>
@@ -237,24 +237,19 @@ const Index = () => {
         </div>
       </section>
 
-      {/* Demonstração */}
-      <section className="py-20 px-4 bg-claro-card/20">
+      {/* Dashboard Interativo */}
+      <section id="funcionalidades" className="py-20 px-4 bg-claro-card/20">
         <div className="container mx-auto">
           <div className="text-center mb-16">
             <h2 className="text-claro-h2 font-bold mb-6">
               Veja o Que Você Receberá <span className="claro-text-gradient">GRATUITAMENTE</span>
             </h2>
+            <p className="text-xl text-gray-300 max-w-3xl mx-auto mb-8">
+              Dashboard interativo com insights reais do seu negócio. Explore cada seção abaixo:
+            </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 max-w-7xl mx-auto">
-            {demonstracao.map((item, index) => (
-              <ClaroCard key={index} className="text-center">
-                <div className="text-4xl mb-4">{item.icone}</div>
-                <h3 className="text-lg font-semibold mb-3">{item.titulo}</h3>
-                <p className="text-gray-400 text-sm">{item.descricao}</p>
-              </ClaroCard>
-            ))}
-          </div>
+          <InteractiveDashboard />
         </div>
       </section>
 

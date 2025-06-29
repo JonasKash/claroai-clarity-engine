@@ -1,115 +1,31 @@
 
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { BarChart, Target, TrendingUp, Users, FileText, ArrowDown } from 'lucide-react';
+import { BarChart, Target, TrendingUp, Users, FileText, Instagram, Globe, Mail, Linkedin } from 'lucide-react';
 import ClaroButton from '@/components/ClaroButton';
 import ClaroCard from '@/components/ClaroCard';
 import LoadingSpinner from '@/components/LoadingSpinner';
+import ProgressBar from '@/components/ProgressBar';
 import { useAppContext } from '@/contexts/AppContext';
+import { generateMockAnalysis, BusinessAnalysis } from '@/utils/mockData';
 
 const Dashboard = () => {
   const navigate = useNavigate();
   const { user, analise, setAnalise, setCurrentStep } = useAppContext();
   const [currentSection, setCurrentSection] = useState('pesquisa');
   const [loading, setLoading] = useState(true);
+  const [richAnalysis, setRichAnalysis] = useState<BusinessAnalysis | null>(null);
 
   useEffect(() => {
     console.log('[Dashboard] Iniciando análise para:', user.nome);
     
-    // Simular carregamento e gerar análise mockada
     setTimeout(() => {
-      const mockAnalise = generateMockAnalise(user);
-      setAnalise(mockAnalise);
+      const newAnalysis = generateMockAnalysis(user);
+      setRichAnalysis(newAnalysis);
+      setAnalise(newAnalysis);
       setLoading(false);
     }, 2000);
   }, [user, setAnalise]);
-
-  const generateMockAnalise = (userData: any) => {
-    console.log('[Dashboard] Gerando análise mockada para:', userData.tipoNegocio);
-    
-    const mercadoData = {
-      'Consultoria': { tamanho: 'R$ 2.3 bilhões/ano', crescimento: '+15%', concorrentes: ['McKinsey', 'Deloitte', 'Consultores locais'], oportunidades: ['Digitalização PMEs', 'Consultoria online', 'Nichos especializados'] },
-      'Design': { tamanho: 'R$ 1.8 bilhões/ano', crescimento: '+22%', concorrentes: ['Agências grandes', 'Freelancers', 'Plataformas online'], oportunidades: ['UX/UI especializado', 'Brand design', 'Design para e-commerce'] },
-      'Marketing': { tamanho: 'R$ 3.1 bilhões/ano', crescimento: '+18%', concorrentes: ['Grandes agências', 'Marketing digital', 'Consultores independentes'], oportunidades: ['Marketing de conteúdo', 'Automação', 'Performance marketing'] },
-      'Advocacia': { tamanho: 'R$ 4.2 bilhões/ano', crescimento: '+8%', concorrentes: ['Grandes escritórios', 'Advogados especialistas', 'Lawtech'], oportunidades: ['Direito digital', 'Consultoria preventiva', 'Advocacia online'] },
-      'Contabilidade': { tamanho: 'R$ 2.8 bilhões/ano', crescimento: '+12%', concorrentes: ['Grandes escritórios', 'Fintechs', 'Contadores tradicionais'], oportunidades: ['Contabilidade consultiva', 'Automação', 'Consultoria fiscal'] }
-    };
-
-    const tipoNegocio = userData.tipoNegocio || 'Consultoria';
-    const mercado = mercadoData[tipoNegocio] || mercadoData['Consultoria'];
-
-    return {
-      pesquisaMercado: {
-        tamanhoMercado: mercado.tamanho,
-        crescimento: mercado.crescimento,
-        concorrentes: mercado.concorrentes,
-        oportunidades: mercado.oportunidades
-      },
-      analiseDigital: {
-        instagramScore: Math.floor(Math.random() * 30) + 60,
-        googleScore: Math.floor(Math.random() * 40) + 40,
-        siteScore: Math.floor(Math.random() * 35) + 55,
-        recomendacoes: [
-          'Aumentar frequência de posts no Instagram',
-          'Otimizar perfil do Google Meu Negócio',
-          'Melhorar velocidade de carregamento do site',
-          'Implementar blog com conteúdo relevante',
-          'Criar estratégia de reviews online'
-        ]
-      },
-      anuncios: [
-        {
-          tipo: 'Instagram Stories',
-          titulo: 'Transforme seu negócio hoje!',
-          copy: `Você sabia que ${tipoNegocio.toLowerCase()} pode aumentar 40% o faturamento com a estratégia certa? 🚀\n\nDescubra como profissionais como você estão revolucionando seus resultados.\n\n👆 Deslize para saber mais`,
-          orientacoes: ['Use cores vibrantes', 'Post entre 18h-21h', 'Inclua call-to-action claro']
-        },
-        {
-          tipo: 'Feed Instagram',
-          titulo: 'O segredo dos profissionais de sucesso',
-          copy: `3 erros que todo ${userData.tipoNegocio?.toLowerCase() || 'profissional'} comete (e como evitar):\n\n❌ Não ter clareza do seu ICP\n❌ Investir sem medir resultados\n❌ Focar em quantidade, não qualidade\n\n✅ A solução? Método comprovado que já ajudou 500+ profissionais.\n\nQuer saber qual? Comenta "QUERO" que eu te explico!`,
-          orientacoes: ['Post às 12h ou 19h', 'Use hashtags do nicho', 'Responda todos os comentários']
-        },
-        {
-          tipo: 'Google Ads',
-          titulo: `${tipoNegocio} Especializado | Resultados Garantidos`,
-          copy: `Aumente seu faturamento em até 60% com nossa metodologia exclusiva. Mais de 500 casos de sucesso. Consultoria gratuita disponível.`,
-          orientacoes: ['Palavras-chave: consultoria + sua cidade', 'Landing page otimizada', 'Orçamento mínimo R$ 30/dia']
-        },
-        {
-          tipo: 'WhatsApp Business',
-          titulo: 'Abordagem inicial',
-          copy: `Olá! Vi que você trabalha com ${userData.tipoNegocio?.toLowerCase() || 'seu serviço'}. Tenho ajudado profissionais como você a aumentar 40% o faturamento. Posso te mostrar como em 5 minutos?`,
-          orientacoes: ['Personalize com o nome', 'Envie após conexão no LinkedIn', 'Ofereça valor imediato']
-        },
-        {
-          tipo: 'E-mail Marketing',
-          titulo: 'Como [NOME] aumentou 60% as vendas em 30 dias',
-          copy: `Oi ${userData.nome || '[NOME]'},\n\nVocê já se perguntou por que alguns profissionais conseguem resultados excepcionais enquanto outros lutam para conseguir clientes?\n\nA diferença está na CLAREZA.\n\n[NOME] descobriu isso da pior forma...\n[Continue lendo para ver a história completa]`,
-          orientacoes: ['Subject line com curiosidade', 'Contar uma história', 'CTA claro no final']
-        }
-      ],
-      icp: {
-        nome: `${userData.tipoNegocio || 'Profissional'} Empreendedor`,
-        demografia: `35-50 anos, renda R$ 15k+, ${userData.tipoNegocio?.toLowerCase() || 'profissional liberal'} há 5+ anos`,
-        dores: [
-          'Dificuldade para encontrar clientes qualificados',
-          'Não consegue precificar adequadamente seus serviços',
-          'Falta tempo para focar no comercial',
-          'Não sabe como se destacar da concorrência'
-        ],
-        canais: ['LinkedIn', 'Instagram', 'Google', 'Indicações', 'Eventos do setor'],
-        abordagem: 'Tom consultivo, focado em resultados e ROI. Timing: terça a quinta, 9h-11h ou 14h-17h',
-        ticketMedio: userData.faturamento === 'Mais de R$100k' ? 'R$ 8.000 - R$ 25.000' : 'R$ 2.500 - R$ 8.000',
-        objecoes: [
-          '"Está muito caro" → Mostrar ROI e casos de sucesso',
-          '"Preciso pensar" → Criar senso de urgência',
-          '"Já tentei isso antes" → Diferenciar metodologia',
-          '"Não tenho tempo" → Mostrar automatização'
-        ]
-      }
-    };
-  };
 
   const handleAgendarConversa = () => {
     console.log('[Dashboard] Redirecionando para agendamento');
@@ -129,6 +45,17 @@ const Dashboard = () => {
     return 'Precisa melhorar';
   };
 
+  const getPlatformIcon = (platform: string) => {
+    switch (platform) {
+      case 'linkedin': return <Linkedin className="w-5 h-5 text-blue-400" />;
+      case 'google': return <Globe className="w-5 h-5 text-green-400" />;
+      case 'instagram': return <Instagram className="w-5 h-5 text-pink-400" />;
+      case 'whatsapp': return <div className="w-5 h-5 bg-green-500 rounded-full flex items-center justify-center text-xs text-white">W</div>;
+      case 'email': return <Mail className="w-5 h-5 text-purple-400" />;
+      default: return <Target className="w-5 h-5 text-claro-accent" />;
+    }
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-claro-background flex items-center justify-center">
@@ -137,7 +64,7 @@ const Dashboard = () => {
     );
   }
 
-  if (!analise) {
+  if (!richAnalysis) {
     return (
       <div className="min-h-screen bg-claro-background flex items-center justify-center">
         <div className="text-center">
@@ -149,8 +76,6 @@ const Dashboard = () => {
       </div>
     );
   }
-
-  const scoreGeral = Math.round((analise.analiseDigital.instagramScore + analise.analiseDigital.googleScore + analise.analiseDigital.siteScore) / 3);
 
   const sections = [
     { id: 'pesquisa', name: 'Pesquisa de Mercado', icon: <BarChart className="h-5 w-5" /> },
@@ -168,7 +93,7 @@ const Dashboard = () => {
             <div>
               <h1 className="text-2xl font-bold mb-2">
                 Análise de {user.nome || 'Usuário'} | Score: {' '}
-                <span className={scoreColor(scoreGeral)}>{scoreGeral}/100</span>
+                <span className={scoreColor(richAnalysis.scoreGeral)}>{richAnalysis.scoreGeral}/100</span>
               </h1>
               <p className="text-gray-400">
                 {user.tipoNegocio} • Análise gerada em {new Date().toLocaleDateString('pt-BR')}
@@ -214,22 +139,24 @@ const Dashboard = () => {
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
                 <ClaroCard>
                   <h3 className="font-semibold text-gray-300 mb-2">Tamanho do Mercado</h3>
-                  <p className="text-2xl font-bold text-claro-success">{analise.pesquisaMercado.tamanhoMercado}</p>
+                  <p className="text-2xl font-bold text-claro-success">{richAnalysis.mercado.tamanhoMercado}</p>
                 </ClaroCard>
                 
                 <ClaroCard>
                   <h3 className="font-semibold text-gray-300 mb-2">Crescimento Anual</h3>
-                  <p className="text-2xl font-bold text-claro-accent">{analise.pesquisaMercado.crescimento}</p>
+                  <p className="text-2xl font-bold text-claro-accent">{richAnalysis.mercado.crescimento}</p>
                 </ClaroCard>
 
                 <ClaroCard>
-                  <h3 className="font-semibold text-gray-300 mb-2">Principais Concorrentes</h3>
-                  <p className="text-sm text-gray-400">{analise.pesquisaMercado.concorrentes.length} identificados</p>
+                  <h3 className="font-semibold text-gray-300 mb-2">Concorrentes</h3>
+                  <p className="text-2xl font-bold text-claro-warning">{richAnalysis.mercado.concorrentes.length}</p>
+                  <p className="text-sm text-gray-400">identificados</p>
                 </ClaroCard>
 
                 <ClaroCard>
                   <h3 className="font-semibold text-gray-300 mb-2">Oportunidades</h3>
-                  <p className="text-sm text-gray-400">{analise.pesquisaMercado.oportunidades.length} encontradas</p>
+                  <p className="text-2xl font-bold text-claro-success">{richAnalysis.mercado.oportunidades.length}</p>
+                  <p className="text-sm text-gray-400">encontradas</p>
                 </ClaroCard>
               </div>
 
@@ -237,7 +164,7 @@ const Dashboard = () => {
                 <ClaroCard>
                   <h3 className="text-xl font-semibold mb-4">Concorrentes Principais</h3>
                   <ul className="space-y-2">
-                    {analise.pesquisaMercado.concorrentes.map((concorrente, index) => (
+                    {richAnalysis.mercado.concorrentes.map((concorrente, index) => (
                       <li key={index} className="flex items-center space-x-2">
                         <div className="w-2 h-2 bg-claro-accent rounded-full"></div>
                         <span>{concorrente}</span>
@@ -249,27 +176,15 @@ const Dashboard = () => {
                 <ClaroCard>
                   <h3 className="text-xl font-semibold mb-4">Oportunidades Identificadas</h3>
                   <ul className="space-y-2">
-                    {analise.pesquisaMercado.oportunidades.map((oportunidade, index) => (
-                      <li key={index} className="flex items-center space-x-2">
-                        <div className="w-2 h-2 bg-claro-success rounded-full"></div>
-                        <span>{oportunidade}</span>
+                    {richAnalysis.mercado.oportunidades.map((oportunidade, index) => (
+                      <li key={index} className="flex items-start space-x-2">
+                        <div className="w-2 h-2 bg-claro-success rounded-full mt-2"></div>
+                        <span className="text-sm">{oportunidade}</span>
                       </li>
                     ))}
                   </ul>
                 </ClaroCard>
               </div>
-
-              {/* Gráfico Mockado */}
-              <ClaroCard>
-                <h3 className="text-xl font-semibold mb-4">Crescimento do Mercado</h3>
-                <div className="h-64 bg-gradient-to-r from-claro-primary/20 to-claro-accent/20 rounded-lg flex items-center justify-center">
-                  <div className="text-center">
-                    <TrendingUp className="h-16 w-16 text-claro-accent mx-auto mb-4" />
-                    <p className="text-gray-400">Gráfico de crescimento do mercado</p>
-                    <p className="text-sm text-gray-500 mt-2">Dados dos últimos 5 anos</p>
-                  </div>
-                </div>
-              </ClaroCard>
             </div>
           )}
 
@@ -277,123 +192,39 @@ const Dashboard = () => {
             <div className="space-y-6 animate-fade-in">
               <h2 className="text-claro-h2 font-bold mb-6">Análise Digital</h2>
               
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-                <ClaroCard>
-                  <div className="flex items-center justify-between mb-4">
-                    <h3 className="text-lg font-semibold">Instagram</h3>
-                    <div className="text-2xl">📱</div>
-                  </div>
-                  <div className="mb-3">
-                    <div className="flex items-center justify-between mb-1">
-                      <span className="text-sm text-gray-400">Score</span>
-                      <span className={`font-bold ${scoreColor(analise.analiseDigital.instagramScore)}`}>
-                        {analise.analiseDigital.instagramScore}/100
-                      </span>
-                    </div>
-                    <div className="w-full bg-claro-background rounded-full h-2">
-                      <div
-                        className="bg-claro-gradient h-2 rounded-full transition-all duration-1000"
-                        style={{ width: `${analise.analiseDigital.instagramScore}%` }}
-                      ></div>
-                    </div>
-                  </div>
-                  <p className="text-sm text-gray-400">{scoreLabel(analise.analiseDigital.instagramScore)}</p>
-                </ClaroCard>
-
-                <ClaroCard>
-                  <div className="flex items-center justify-between mb-4">
-                    <h3 className="text-lg font-semibold">Google</h3>
-                    <div className="text-2xl">🔍</div>
-                  </div>
-                  <div className="mb-3">
-                    <div className="flex items-center justify-between mb-1">
-                      <span className="text-sm text-gray-400">Score</span>
-                      <span className={`font-bold ${scoreColor(analise.analiseDigital.googleScore)}`}>
-                        {analise.analiseDigital.googleScore}/100
-                      </span>
-                    </div>
-                    <div className="w-full bg-claro-background rounded-full h-2">
-                      <div
-                        className="bg-claro-gradient h-2 rounded-full transition-all duration-1000"
-                        style={{ width: `${analise.analiseDigital.googleScore}%` }}
-                      ></div>
-                    </div>
-                  </div>
-                  <p className="text-sm text-gray-400">{scoreLabel(analise.analiseDigital.googleScore)}</p>
-                </ClaroCard>
-
-                <ClaroCard>
-                  <div className="flex items-center justify-between mb-4">
-                    <h3 className="text-lg font-semibold">Site</h3>
-                    <div className="text-2xl">🌐</div>
-                  </div>
-                  <div className="mb-3">
-                    <div className="flex items-center justify-between mb-1">
-                      <span className="text-sm text-gray-400">Score</span>
-                      <span className={`font-bold ${scoreColor(analise.analiseDigital.siteScore)}`}>
-                        {analise.analiseDigital.siteScore}/100
-                      </span>
-                    </div>
-                    <div className="w-full bg-claro-background rounded-full h-2">
-                      <div
-                        className="bg-claro-gradient h-2 rounded-full transition-all duration-1000"
-                        style={{ width: `${analise.analiseDigital.siteScore}%` }}
-                      ></div>
-                    </div>
-                  </div>
-                  <p className="text-sm text-gray-400">{scoreLabel(analise.analiseDigital.siteScore)}</p>
-                </ClaroCard>
-              </div>
-
-              <ClaroCard>
-                <h3 className="text-xl font-semibold mb-4">Recomendações Prioritárias</h3>
-                <div className="space-y-3">
-                  {analise.analiseDigital.recomendacoes.map((recomendacao, index) => (
-                    <div key={index} className="flex items-start space-x-3 p-3 bg-claro-background/50 rounded-lg">
-                      <div className="w-6 h-6 bg-claro-accent rounded-full flex items-center justify-center text-xs font-bold mt-0.5">
-                        {index + 1}
+              <div className="grid gap-6">
+                {Object.entries(richAnalysis.digital).map(([platform, data]) => (
+                  <ClaroCard key={platform}>
+                    <div className="flex items-center justify-between mb-4">
+                      <div className="flex items-center gap-3">
+                        {platform === 'instagram' && <Instagram className="w-6 h-6 text-pink-400" />}
+                        {platform === 'google' && <Globe className="w-6 h-6 text-blue-400" />}
+                        {platform === 'site' && <Globe className="w-6 h-6 text-green-400" />}
+                        <h3 className="text-lg font-semibold capitalize">{platform}</h3>
                       </div>
-                      <span>{recomendacao}</span>
-                    </div>
-                  ))}
-                </div>
-              </ClaroCard>
-            </div>
-          )}
-
-          {currentSection === 'anuncios' && (
-            <div className="space-y-6 animate-fade-in">
-              <h2 className="text-claro-h2 font-bold mb-6">Anúncios Prontos para Usar</h2>
-              
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                {analise.anuncios.map((anuncio, index) => (
-                  <ClaroCard key={index}>
-                    <div className="mb-4">
-                      <div className="flex items-center justify-between mb-2">
-                        <h3 className="text-lg font-semibold">{anuncio.tipo}</h3>
-                        <span className="text-2xl">
-                          {anuncio.tipo.includes('Instagram') ? '📱' : 
-                           anuncio.tipo.includes('Google') ? '🔍' : 
-                           anuncio.tipo.includes('WhatsApp') ? '💬' : '📧'}
+                      <div className="flex items-center gap-3">
+                        <span className={`text-2xl font-bold ${scoreColor(data.score)}`}>
+                          {data.score}/100
+                        </span>
+                        <span className={`px-3 py-1 rounded-full text-xs font-medium ${
+                          data.score >= 70 ? 'bg-claro-success/20 text-claro-success' :
+                          data.score >= 50 ? 'bg-claro-warning/20 text-claro-warning' :
+                          'bg-red-500/20 text-red-400'
+                        }`}>
+                          {data.status}
                         </span>
                       </div>
-                      <h4 className="font-medium text-claro-accent mb-3">{anuncio.titulo}</h4>
                     </div>
-
-                    <div className="mb-4">
-                      <h5 className="font-medium mb-2">Copy:</h5>
-                      <div className="bg-claro-background/50 p-4 rounded-lg">
-                        <p className="whitespace-pre-line text-sm">{anuncio.copy}</p>
-                      </div>
-                    </div>
-
+                    
+                    <ProgressBar progress={data.score} className="mb-4" />
+                    
                     <div>
-                      <h5 className="font-medium mb-2">Orientações:</h5>
+                      <p className="text-claro-accent text-sm font-medium mb-2">Melhorias Prioritárias:</p>
                       <ul className="space-y-1">
-                        {anuncio.orientacoes.map((orientacao, idx) => (
-                          <li key={idx} className="flex items-start space-x-2 text-sm">
-                            <div className="w-1.5 h-1.5 bg-claro-accent rounded-full mt-2"></div>
-                            <span className="text-gray-400">{orientacao}</span>
+                        {data.melhorias.map((melhoria, i) => (
+                          <li key={i} className="text-gray-300 text-sm flex items-center gap-2">
+                            <div className="w-1.5 h-1.5 bg-claro-accent rounded-full"></div>
+                            {melhoria}
                           </li>
                         ))}
                       </ul>
@@ -404,81 +235,114 @@ const Dashboard = () => {
             </div>
           )}
 
+          {currentSection === 'anuncios' && (
+            <div className="space-y-6 animate-fade-in">
+              <h2 className="text-claro-h2 font-bold mb-6">Anúncios Prontos para Usar</h2>
+              
+              <div className="grid gap-6">
+                {richAnalysis.anuncios.map((anuncio, i) => (
+                  <ClaroCard key={i}>
+                    <div className="flex items-center gap-3 mb-4">
+                      {getPlatformIcon(anuncio.plataforma)}
+                      <h3 className="text-lg font-semibold">{anuncio.tipo}</h3>
+                    </div>
+                    
+                    {anuncio.titulo && (
+                      <h4 className="font-medium text-claro-accent mb-3">{anuncio.titulo}</h4>
+                    )}
+                    
+                    <div className="bg-claro-background/50 rounded-lg p-4 mb-3">
+                      <p className="text-gray-300 text-sm leading-relaxed whitespace-pre-line">
+                        {anuncio.copy}
+                      </p>
+                    </div>
+                    
+                    {anuncio.cta && (
+                      <button className="bg-claro-gradient hover:bg-claro-gradient-reverse text-white px-4 py-2 rounded-lg text-sm font-medium transition-all duration-300 hover:scale-105 mb-3">
+                        {anuncio.cta}
+                      </button>
+                    )}
+                    
+                    {anuncio.palavras && (
+                      <div className="mb-3">
+                        <p className="text-claro-accent text-sm font-medium mb-2">Palavras-chave:</p>
+                        <div className="flex flex-wrap gap-2">
+                          {anuncio.palavras.map((palavra, j) => (
+                            <span key={j} className="bg-claro-accent/20 text-claro-accent px-2 py-1 rounded text-xs">
+                              {palavra}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                    
+                    {anuncio.segmentacao && (
+                      <div className="text-xs text-gray-400">
+                        <strong>Segmentação:</strong> {anuncio.segmentacao}
+                      </div>
+                    )}
+                  </ClaroCard>
+                ))}
+              </div>
+            </div>
+          )}
+
           {currentSection === 'icp' && (
             <div className="space-y-6 animate-fade-in">
               <h2 className="text-claro-h2 font-bold mb-6">Seu ICP (Cliente Ideal)</h2>
               
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <ClaroCard>
-                  <div className="text-center mb-6">
-                    <div className="w-20 h-20 bg-claro-gradient rounded-full mx-auto mb-4 flex items-center justify-center text-3xl">
-                      👤
-                    </div>
-                    <h3 className="text-xl font-semibold">{analise.icp.nome}</h3>
-                    <p className="text-gray-400 mt-2">{analise.icp.demografia}</p>
+              <ClaroCard>
+                <div className="flex items-center gap-4 mb-6">
+                  <div className="w-16 h-16 bg-claro-gradient rounded-full flex items-center justify-center">
+                    <Users className="w-8 h-8 text-white" />
                   </div>
-
-                  <div className="mb-6">
-                    <h4 className="font-semibold mb-3">Ticket Médio Recomendado</h4>
-                    <div className="bg-claro-success/20 border border-claro-success/30 rounded-lg p-4 text-center">
-                      <span className="text-xl font-bold text-claro-success">{analise.icp.ticketMedio}</span>
-                    </div>
-                  </div>
-
                   <div>
-                    <h4 className="font-semibold mb-3">Como Abordar</h4>
-                    <p className="text-gray-400 text-sm">{analise.icp.abordagem}</p>
+                    <h3 className="text-xl font-bold">{richAnalysis.icp.nome}</h3>
+                    <p className="text-claro-accent">{richAnalysis.icp.idade} • {richAnalysis.icp.cargo}</p>
+                    <p className="text-gray-400 text-sm">{richAnalysis.icp.renda}</p>
                   </div>
-                </ClaroCard>
-
-                <div className="space-y-6">
-                  <ClaroCard>
-                    <h4 className="font-semibold mb-3">Principais Dores</h4>
+                </div>
+                
+                <div className="grid gap-6 md:grid-cols-2">
+                  <div>
+                    <h4 className="text-claro-accent font-semibold mb-3">Principais Dores</h4>
                     <ul className="space-y-2">
-                      {analise.icp.dores.map((dor, index) => (
-                        <li key={index} className="flex items-start space-x-2">
+                      {richAnalysis.icp.dores.map((dor, i) => (
+                        <li key={i} className="text-gray-300 text-sm flex items-start gap-2">
                           <div className="w-2 h-2 bg-red-400 rounded-full mt-2"></div>
-                          <span className="text-sm">{dor}</span>
+                          {dor}
                         </li>
                       ))}
                     </ul>
-                  </ClaroCard>
-
-                  <ClaroCard>
-                    <h4 className="font-semibold mb-3">Onde Encontrar</h4>
+                  </div>
+                  
+                  <div>
+                    <h4 className="text-claro-accent font-semibold mb-3">Principais Desejos</h4>
+                    <ul className="space-y-2">
+                      {richAnalysis.icp.desejos.map((desejo, i) => (
+                        <li key={i} className="text-gray-300 text-sm flex items-start gap-2">
+                          <div className="w-2 h-2 bg-claro-success rounded-full mt-2"></div>
+                          {desejo}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                  
+                  <div>
+                    <h4 className="text-claro-accent font-semibold mb-3">Onde Encontrar</h4>
                     <div className="flex flex-wrap gap-2">
-                      {analise.icp.canais.map((canal, index) => (
-                        <span
-                          key={index}
-                          className="px-3 py-1 bg-claro-accent/20 text-claro-accent rounded-full text-xs font-medium"
-                        >
+                      {richAnalysis.icp.canais.map((canal, i) => (
+                        <span key={i} className="bg-claro-accent/20 text-claro-accent px-3 py-1 rounded-full text-sm">
                           {canal}
                         </span>
                       ))}
                     </div>
-                  </ClaroCard>
-                </div>
-              </div>
-
-              <ClaroCard>
-                <h4 className="font-semibold mb-4">Objeções Comuns & Como Responder</h4>
-                <div className="space-y-4">
-                  {analise.icp.objecoes.map((objecao, index) => {
-                    const [pergunta, resposta] = objecao.split(' → ');
-                    return (
-                      <div key={index} className="border border-claro-accent/20 rounded-lg p-4">
-                        <div className="flex items-start space-x-3">
-                          <div className="w-6 h-6 bg-red-400/20 rounded-full flex items-center justify-center text-red-400 text-xs font-bold">
-                            ?
-                          </div>
-                          <div className="flex-1">
-                            <p className="font-medium text-red-400 mb-2">{pergunta}</p>
-                            <p className="text-sm text-gray-400">{resposta}</p>
-                          </div>
-                        </div>
-                      </div>
-                    );
-                  })}
+                  </div>
+                  
+                  <div>
+                    <h4 className="text-claro-accent font-semibold mb-3">Como Abordar</h4>
+                    <p className="text-gray-300 text-sm">{richAnalysis.icp.abordagem}</p>
+                  </div>
                 </div>
               </ClaroCard>
             </div>
@@ -505,7 +369,6 @@ const Dashboard = () => {
         </div>
       </div>
 
-      {/* Espaçamento para o footer fixo */}
       <div className="h-32"></div>
     </div>
   );

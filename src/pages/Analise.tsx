@@ -13,7 +13,7 @@ interface ChatMessage {
   content: string;
   options?: string[];
   inputType?: 'text' | 'phone' | 'url';
-  inputPlaceholder?: string;
+  placeholder?: string;
 }
 
 const Analise = () => {
@@ -123,10 +123,8 @@ const Analise = () => {
     const step = chatSteps[currentStep];
     console.log(`[Analise] Resposta recebida para ${step.field}:`, value);
     
-    // Validação básica
     if (!value.trim()) return;
 
-    // Sanitização
     const sanitizedValue = value.trim().replace(/[<>\"']/g, '');
     
     addMessage(sanitizedValue, 'user');
@@ -178,7 +176,6 @@ const Analise = () => {
         if (chatSteps[nextStep].type === 'loading') {
           addMessage(chatSteps[nextStep].message, 'ai');
           
-          // Simular loading
           setTimeout(() => {
             setCurrentChatStep(nextStep + 1);
             addMessage(chatSteps[nextStep + 1].message, 'ai');
@@ -202,94 +199,110 @@ const Analise = () => {
   const isFinalStep = currentStepData && currentStepData.type === 'final';
 
   return (
-    <div className="min-h-screen bg-claro-background flex flex-col">
-      {/* Header */}
-      <header className="p-4 border-b border-claro-accent/20">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-2">
-            <div className="w-8 h-8 bg-claro-gradient rounded-lg flex items-center justify-center">
+    <div className="min-h-screen bg-claro-background">
+      {/* Header Moderno */}
+      <header className="bg-claro-card/80 backdrop-blur-sm border-b border-claro-accent/20 p-4">
+        <div className="flex items-center justify-between max-w-4xl mx-auto">
+          <div className="flex items-center space-x-3">
+            <div className="w-10 h-10 bg-claro-gradient rounded-full flex items-center justify-center">
               <span className="text-white font-bold text-sm">AI</span>
             </div>
-            <span className="text-xl font-bold claro-text-gradient">ClaroAI</span>
+            <div>
+              <h1 className="text-lg font-bold claro-text-gradient">ClaroAI Assistant</h1>
+              <p className="text-xs text-gray-400">Análise Comercial Inteligente</p>
+            </div>
           </div>
           
-          <ProgressBar progress={formProgress} className="flex-1 mx-8 max-w-md" />
-          
-          <span className="text-sm text-gray-400">
-            {Math.round(formProgress)}% completo
-          </span>
+          <div className="flex items-center space-x-4">
+            <ProgressBar progress={formProgress} className="w-24" />
+            <span className="text-xs text-gray-400">{Math.round(formProgress)}%</span>
+          </div>
         </div>
       </header>
 
-      {/* Chat Messages */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-4">
-        <div className="max-w-4xl mx-auto">
+      {/* Chat Container */}
+      <div className="max-w-4xl mx-auto bg-claro-card/30 rounded-t-2xl mt-4 mx-4 shadow-claro-lg overflow-hidden">
+        {/* Chat Messages */}
+        <div className="h-96 overflow-y-auto p-6 space-y-4 bg-claro-background/50">
           {messages.map((message) => (
             <div
               key={message.id}
-              className={`flex ${message.type === 'user' ? 'justify-end' : 'justify-start'} animate-fade-in`}
+              className={`flex animate-fade-in ${message.type === 'user' ? 'justify-end' : 'justify-start'}`}
             >
-              <div className={`max-w-xs lg:max-w-md px-4 py-3 rounded-2xl ${
-                message.type === 'user'
-                  ? 'bg-claro-gradient text-white ml-4'
-                  : 'claro-glass mr-4'
-              }`}>
-                {message.type === 'ai' && (
-                  <div className="flex items-center space-x-2 mb-2">
-                    <div className="w-6 h-6 bg-claro-gradient rounded-full flex items-center justify-center">
-                      <span className="text-white font-bold text-xs">AI</span>
+              <div className={`flex gap-3 max-w-[80%] ${message.type === 'user' ? 'flex-row-reverse' : ''}`}>
+                {/* Avatar */}
+                <div className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${
+                  message.type === 'user' 
+                    ? 'bg-claro-gradient' 
+                    : 'bg-claro-accent'
+                }`}>
+                  <span className="text-white font-bold text-xs">
+                    {message.type === 'user' ? 'U' : 'AI'}
+                  </span>
+                </div>
+                
+                {/* Message Bubble */}
+                <div className={`rounded-2xl p-4 shadow-sm ${
+                  message.type === 'user'
+                    ? 'bg-claro-gradient text-white'
+                    : 'claro-glass'
+                }`}>
+                  <p className="text-sm leading-relaxed whitespace-pre-line">{message.content}</p>
+                  
+                  {/* Options */}
+                  {message.options && isWaitingForOptions && (
+                    <div className="mt-4 grid gap-2">
+                      {message.options.map((option, index) => (
+                        <ClaroButton
+                          key={index}
+                          variant="secondary"
+                          size="sm"
+                          className="w-full text-left justify-start hover:scale-105 transition-transform"
+                          onClick={() => handleOptionSelect(option)}
+                        >
+                          {option}
+                        </ClaroButton>
+                      ))}
                     </div>
-                    <span className="text-sm font-medium text-claro-accent">ClaroAI</span>
-                  </div>
-                )}
-                
-                <p className="whitespace-pre-line">{message.content}</p>
-                
-                {message.options && isWaitingForOptions && (
-                  <div className="mt-4 space-y-2">
-                    {message.options.map((option, index) => (
-                      <ClaroButton
-                        key={index}
-                        variant="secondary"
-                        size="sm"
-                        className="w-full text-left justify-start"
-                        onClick={() => handleOptionSelect(option)}
-                      >
-                        {option}
-                      </ClaroButton>
-                    ))}
-                  </div>
-                )}
+                  )}
+                </div>
               </div>
             </div>
           ))}
 
+          {/* Typing Animation */}
           {isTyping && (
             <div className="flex justify-start animate-fade-in">
-              <div className="claro-glass px-4 py-3 rounded-2xl mr-4">
-                <div className="flex items-center space-x-2">
-                  <div className="w-6 h-6 bg-claro-gradient rounded-full flex items-center justify-center">
-                    <span className="text-white font-bold text-xs">AI</span>
-                  </div>
+              <div className="flex gap-3 max-w-[80%]">
+                <div className="w-8 h-8 bg-claro-accent rounded-full flex items-center justify-center">
+                  <span className="text-white font-bold text-xs">AI</span>
+                </div>
+                <div className="claro-glass rounded-2xl p-4">
                   <div className="flex space-x-1">
-                    <div className="w-2 h-2 bg-claro-accent rounded-full animate-pulse"></div>
-                    <div className="w-2 h-2 bg-claro-accent rounded-full animate-pulse delay-100"></div>
-                    <div className="w-2 h-2 bg-claro-accent rounded-full animate-pulse delay-200"></div>
+                    <div className="w-2 h-2 bg-claro-accent rounded-full animate-bounce"></div>
+                    <div className="w-2 h-2 bg-claro-accent rounded-full animate-bounce" style={{animationDelay: '0.1s'}}></div>
+                    <div className="w-2 h-2 bg-claro-accent rounded-full animate-bounce" style={{animationDelay: '0.2s'}}></div>
                   </div>
                 </div>
               </div>
             </div>
           )}
 
+          {/* Loading State */}
           {currentStepData?.type === 'loading' && (
-            <div className="flex justify-center">
+            <div className="flex justify-center animate-fade-in">
               <LoadingSpinner text="Analisando seus dados..." />
             </div>
           )}
 
+          {/* Final CTA */}
           {isFinalStep && (
             <div className="flex justify-center animate-fade-in">
-              <ClaroButton onClick={handleViewAnalysis} size="lg">
+              <ClaroButton 
+                onClick={handleViewAnalysis} 
+                size="lg"
+                className="shadow-claro-lg hover:scale-105 transition-all duration-300"
+              >
                 Ver Minha Análise Completa
               </ClaroButton>
             </div>
@@ -297,19 +310,18 @@ const Analise = () => {
 
           <div ref={messagesEndRef} />
         </div>
-      </div>
 
-      {/* Input Area */}
-      {isWaitingForInput && (
-        <div className="p-4 border-t border-claro-accent/20">
-          <div className="max-w-4xl mx-auto">
+        {/* Input Area */}
+        {isWaitingForInput && (
+          <div className="border-t border-claro-accent/20 bg-claro-card/50 p-4">
             {currentStepData.type === 'multi-input' ? (
-              <div className="space-y-4">
+              <div className="space-y-3">
                 <ClaroInput
                   placeholder="@seuinstagram ou https://seusite.com"
                   value={currentInput}
                   onChange={(e) => setCurrentInput(e.target.value)}
                   onKeyPress={(e) => e.key === 'Enter' && handleMultiInputSubmit()}
+                  className="w-full"
                 />
                 <div className="flex space-x-2">
                   <ClaroButton
@@ -330,9 +342,9 @@ const Analise = () => {
                 </div>
               </div>
             ) : (
-              <div className="flex space-x-2">
+              <div className="flex space-x-3">
                 <ClaroInput
-                  placeholder={currentStepData.inputPlaceholder}
+                  placeholder={currentStepData.placeholder}
                   value={currentInput}
                   onChange={(e) => setCurrentInput(e.target.value)}
                   onKeyPress={(e) => e.key === 'Enter' && handleInputSubmit(currentInput)}
@@ -341,14 +353,15 @@ const Analise = () => {
                 <ClaroButton
                   onClick={() => handleInputSubmit(currentInput)}
                   disabled={!currentInput.trim()}
+                  className="px-6"
                 >
                   Enviar
                 </ClaroButton>
               </div>
             )}
           </div>
-        </div>
-      )}
+        )}
+      </div>
     </div>
   );
 };
