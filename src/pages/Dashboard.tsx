@@ -15,6 +15,20 @@ const Dashboard = () => {
   const [loading, setLoading] = useState(true);
   const [richAnalysis, setRichAnalysis] = useState<BusinessAnalysis | null>(null);
 
+  // Instagram mock data for detailed analysis
+  const instagramMockData = {
+    profilePic: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=80&h=80&fit=crop&crop=face&auto=format",
+    followers: "1.2K",
+    following: "890",
+    posts: "156",
+    lastPosts: [
+      "https://images.unsplash.com/photo-1611224923853-80b023f02d71?w=100&h=100&fit=crop&auto=format",
+      "https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=100&h=100&fit=crop&auto=format",
+      "https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=100&h=100&fit=crop&auto=format"
+    ],
+    engagement: "7.3%"
+  };
+
   useEffect(() => {
     console.log('[Dashboard] Iniciando análise para:', user.nome);
     
@@ -128,8 +142,8 @@ const Dashboard = () => {
           </nav>
         </div>
 
-        {/* Content - with proper bottom padding for CTA */}
-        <div className="flex-1 p-6 pb-48">
+        {/* Content */}
+        <div className="flex-1 p-6">
           {currentSection === 'pesquisa' && (
             <div className="space-y-6 animate-fade-in">
               <h2 className="text-claro-h2 font-bold mb-6">Pesquisa de Mercado</h2>
@@ -213,6 +227,42 @@ const Dashboard = () => {
                         </span>
                       </div>
                     </div>
+                    
+                    {/* Detailed Instagram Analysis */}
+                    {platform === 'instagram' && (
+                      <div className="mb-4 p-4 claro-glass rounded-lg">
+                        <div className="flex items-center gap-4 mb-4">
+                          <img 
+                            src={instagramMockData.profilePic} 
+                            alt="Profile" 
+                            className="w-16 h-16 rounded-full object-cover"
+                          />
+                          <div>
+                            <h4 className="text-lg font-semibold">@seuperfil</h4>
+                            <div className="flex gap-4 text-sm text-gray-400">
+                              <span>{instagramMockData.followers} seguidores</span>
+                              <span>{instagramMockData.following} seguindo</span>
+                              <span>{instagramMockData.posts} posts</span>
+                            </div>
+                          </div>
+                        </div>
+                        
+                        <div className="mb-4">
+                          <h5 className="text-sm font-medium text-claro-accent mb-2">Últimos Posts:</h5>
+                          <div className="flex gap-2">
+                            {instagramMockData.lastPosts.map((post, i) => (
+                              <img key={i} src={post} alt={`Post ${i+1}`} className="w-16 h-16 rounded object-cover" />
+                            ))}
+                          </div>
+                        </div>
+                        
+                        <div className="text-center">
+                          <div className="text-claro-accent font-medium">
+                            Engajamento: {instagramMockData.engagement}
+                          </div>
+                        </div>
+                      </div>
+                    )}
                     
                     <ProgressBar progress={data.score} className="mb-4" />
                     
@@ -348,8 +398,8 @@ const Dashboard = () => {
         </div>
       </div>
 
-      {/* Fixed CTA - Properly positioned without overlapping */}
-      <div className="relative bottom-0 left-0 right-0 bg-claro-gradient p-4 mt-8 border-t border-claro-accent/20">
+      {/* Fixed CTA - Properly positioned at the bottom */}
+      <div className="bg-claro-gradient p-6 mt-8">
         <div className="container mx-auto">
           <ClaroCard gradient className="text-center">
             <h3 className="text-lg font-semibold mb-2">

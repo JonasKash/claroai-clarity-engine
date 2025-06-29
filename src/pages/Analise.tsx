@@ -1,405 +1,357 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Bot, User } from 'lucide-react';
+import { Send, Bot, User } from 'lucide-react';
 import ClaroButton from '@/components/ClaroButton';
-import ClaroInput from '@/components/ClaroInput';
-import LoadingSpinner from '@/components/LoadingSpinner';
-import ProgressBar from '@/components/ProgressBar';
+import ClaroCard from '@/components/ClaroCard';
 import { useAppContext } from '@/contexts/AppContext';
-
-interface ChatMessage {
-  id: number;
-  type: 'ai' | 'user';
-  content: string;
-  options?: string[];
-  inputType?: 'text' | 'phone' | 'url';
-  placeholder?: string;
-}
 
 const Analise = () => {
   const navigate = useNavigate();
-  const { user, setUser, setCurrentStep, formProgress, setFormProgress } = useAppContext();
-  const [messages, setMessages] = useState<ChatMessage[]>([]);
+  const { updateUser, setCurrentStep } = useAppContext();
+  const [messages, setMessages] = useState([]);
   const [currentInput, setCurrentInput] = useState('');
+  const [currentStepIndex, setCurrentStepIndex] = useState(0);
   const [isTyping, setIsTyping] = useState(false);
-  const [currentStep, setCurrentChatStep] = useState(0);
+  const [userData, setUserData] = useState({});
   const [awaitingResponse, setAwaitingResponse] = useState(false);
-  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const messagesEndRef = useRef(null);
 
-  const chatSteps = [
+  // Auto-scroll to bottom whenever messages change
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [messages, isTyping]);
+
+  const chatFlow = [
     {
-      message: "Olá! 👋 Sou Clara, sua assistente de análise comercial da ClaroAI. Vou fazer uma análise completa do seu negócio em poucos minutos.",
-      type: 'greeting'
+      id: 'welcome',
+      type: 'bot',
+      message: 'Olá! 👋 Sou Clara, assistente da ClaroAI. Vou fazer uma análise completa do seu negócio em poucos minutos.',
+      delay: 1000
     },
     {
-      message: "Primeiro, me diga seu nome:",
-      type: 'input',
-      field: 'nome',
+      id: 'name',
+      type: 'bot',
+      message: 'Primeiro, me diga seu nome:',
       inputType: 'text',
-      placeholder: 'Digite seu nome completo'
+      field: 'nome',
+      delay: 1500
     },
     {
-      message: "Qual seu WhatsApp para enviarmos o relatório?",
-      type: 'input',
+      id: 'whatsapp',
+      type: 'bot',
+      message: 'Ótimo, {nome}! Qual seu WhatsApp para enviarmos o relatório?',
+      inputType: 'tel',
       field: 'whatsapp',
-      inputType: 'phone',
-      placeholder: '(11) 99999-9999'
+      delay: 1000
     },
     {
-      message: "Que tipo de serviço você oferece?",
-      type: 'options',
+      id: 'business',
+      type: 'bot',
+      message: 'Que tipo de serviço você oferece?',
+      inputType: 'options',
       field: 'tipoNegocio',
-      options: ['Consultoria', 'Design', 'Marketing', 'Advocacia', 'Contabilidade', 'Outros']
+      options: ['Consultoria', 'Design', 'Marketing', 'Advocacia', 'Contabilidade', 'Outros'],
+      delay: 1000
     },
     {
-      message: "Qual seu faturamento mensal aproximado?",
-      type: 'options',
+      id: 'revenue',
+      type: 'bot',
+      message: 'Qual seu faturamento mensal aproximado?',
+      inputType: 'options',
       field: 'faturamento',
-      options: ['Até R$10k', 'R$10k-30k', 'R$30k-100k', 'Mais de R$100k']
+      options: ['Até R$10k', 'R$10k-30k', 'R$30k-100k', 'Mais de R$100k'],
+      delay: 1000
     },
     {
-      message: "Qual seu principal desafio comercial hoje?",
-      type: 'options',
+      id: 'challenge',
+      type: 'bot',
+      message: 'Qual seu principal desafio comercial hoje?',
+      inputType: 'options',
       field: 'desafio',
-      options: ['Gerar leads', 'Converter leads', 'Organizar processo', 'Aumentar ticket']
+      options: ['Gerar leads', 'Converter leads', 'Organizar processo', 'Aumentar ticket'],
+      delay: 1000
     },
     {
-      message: "Tem Instagram ou site do negócio?",
-      type: 'multi-input',
-      fields: ['instagram', 'site']
+      id: 'site',
+      type: 'bot',
+      message: 'Qual o site da sua empresa?',
+      inputType: 'text',
+      field: 'site',
+      delay: 1000,
+      placeholder: 'Digite seu site ou "não tenho"'
     },
     {
-      message: "Como faz prospecção hoje?",
-      type: 'options',
+      id: 'instagram',
+      type: 'bot',
+      message: '', // Will be set dynamically based on site response
+      inputType: 'text',
+      field: 'instagram',
+      delay: 1000,
+      placeholder: '@usuario ou "não tenho"'
+    },
+    {
+      id: 'prospecting',
+      type: 'bot',
+      message: 'Como faz prospecção hoje?',
+      inputType: 'options',
       field: 'prospeccao',
-      options: ['Indicação', 'Redes sociais', 'Google', 'Não faço']
+      options: ['Indicação', 'Redes sociais', 'Google', 'Não faço'],
+      delay: 1000
     },
     {
-      message: "Quanto investe em marketing por mês?",
-      type: 'options',
+      id: 'investment',
+      type: 'bot',
+      message: 'Quanto investe em marketing por mês?',
+      inputType: 'options',
       field: 'investimento',
-      options: ['Nada', 'Até R$500', 'R$500-2k', 'Mais de R$2k']
+      options: ['Nada', 'Até R$500', 'R$500-2k', 'Mais de R$2k'],
+      delay: 1000
     },
     {
-      message: "Perfeito! 🎯 Agora vou analisar tudo...",
-      type: 'loading'
+      id: 'analyzing',
+      type: 'bot',
+      message: 'Perfeito! 🎯 Agora vou analisar tudo...',
+      delay: 2000,
+      showLoading: true
     },
     {
-      message: "Análise concluída! Encontrei insights poderosos sobre seu negócio. Clique para ver:",
-      type: 'final'
+      id: 'complete',
+      type: 'bot',
+      message: 'Análise concluída! Encontrei insights poderosos sobre seu negócio. 🚀',
+      delay: 3000,
+      showButton: true,
+      buttonText: 'Ver Minha Análise Completa',
+      buttonAction: 'complete'
     }
   ];
 
   useEffect(() => {
     console.log('[Analise] Iniciando chat');
-    addMessage(chatSteps[0].message, 'ai');
-    setTimeout(() => {
-      setCurrentChatStep(1);
-      addMessage(chatSteps[1].message, 'ai');
-    }, 1500);
-  }, []);
-
-  useEffect(() => {
-    scrollToBottom();
-  }, [messages]);
-
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  };
-
-  const addMessage = (content: string, type: 'ai' | 'user', options?: string[]) => {
-    setIsTyping(true);
-    setTimeout(() => {
-      setMessages(prev => [...prev, {
-        id: Date.now(),
-        type,
-        content,
-        options,
-      }]);
-      setIsTyping(false);
-    }, type === 'ai' ? 1000 : 0);
-  };
-
-  const handleInputSubmit = (value: string) => {
-    if (awaitingResponse) return;
-    
-    const step = chatSteps[currentStep];
-    console.log(`[Analise] Resposta recebida para ${step.field}:`, value);
-    
-    if (!value.trim()) return;
-
-    const sanitizedValue = value.trim().replace(/[<>\"']/g, '');
-    
-    setAwaitingResponse(true);
-    addMessage(sanitizedValue, 'user');
-    
-    if (step.field) {
-      setUser({ [step.field]: sanitizedValue });
-    }
-
-    // Clear input field
-    setCurrentInput('');
-    
-    setTimeout(() => {
-      setAwaitingResponse(false);
-      proceedToNextStep();
-    }, 1000);
-  };
-
-  const handleOptionSelect = (option: string) => {
-    if (awaitingResponse) return;
-    
-    const step = chatSteps[currentStep];
-    console.log(`[Analise] Opção selecionada para ${step.field}:`, option);
-    
-    setAwaitingResponse(true);
-    addMessage(option, 'user');
-    
-    if (step.field) {
-      setUser({ [step.field]: option });
-    }
-
-    setTimeout(() => {
-      setAwaitingResponse(false);
-      proceedToNextStep();
-    }, 1000);
-  };
-
-  const handleMultiInputSubmit = () => {
-    if (awaitingResponse) return;
-    
-    const instagram = currentInput.includes('@') ? currentInput : '';
-    const site = currentInput.includes('http') || currentInput.includes('.com') ? currentInput : '';
-    
-    const response = [];
-    if (instagram) response.push(`Instagram: ${instagram}`);
-    if (site) response.push(`Site: ${site}`);
-    if (response.length === 0) response.push('Ainda não tenho');
-
-    setAwaitingResponse(true);
-    addMessage(response.join('\n'), 'user');
-    setUser({ instagram, site });
-    
-    // Clear input field
-    setCurrentInput('');
-    
-    setTimeout(() => {
-      setAwaitingResponse(false);
-      proceedToNextStep();
-    }, 1000);
-  };
-
-  const proceedToNextStep = () => {
-    const progress = ((currentStep + 1) / chatSteps.length) * 100;
-    setFormProgress(progress);
-
-    if (currentStep < chatSteps.length - 1) {
+    if (currentStepIndex < chatFlow.length) {
+      const step = chatFlow[currentStepIndex];
+      
       setTimeout(() => {
-        const nextStep = currentStep + 1;
-        setCurrentChatStep(nextStep);
-
-        if (chatSteps[nextStep].type === 'loading') {
-          addMessage(chatSteps[nextStep].message, 'ai');
+        setIsTyping(true);
+        
+        setTimeout(() => {
+          setIsTyping(false);
+          let message = step.message;
           
-          setTimeout(() => {
-            setCurrentChatStep(nextStep + 1);
-            addMessage(chatSteps[nextStep + 1].message, 'ai');
-          }, 3000);
-        } else {
-          addMessage(chatSteps[nextStep].message, 'ai', chatSteps[nextStep].options);
-        }
-      }, 1500);
+          // Handle dynamic Instagram message based on site response
+          if (step.id === 'instagram') {
+            const hasSite = userData.site && userData.site.toLowerCase() !== 'não tenho' && userData.site.trim() !== '';
+            message = hasSite ? 'Ótimo! E qual seu Instagram (@usuario)?' : 'Entendido. Qual seu Instagram (@usuario)?';
+          } else {
+            message = message.replace('{nome}', userData.nome || '');
+          }
+          
+          setMessages(prev => [...prev, {
+            ...step,
+            message,
+            timestamp: new Date()
+          }]);
+          setAwaitingResponse(false);
+        }, 1500);
+      }, step.delay || 0);
+    }
+  }, [currentStepIndex, userData.nome, userData.site]);
+
+  const handleSendMessage = (value) => {
+    if (awaitingResponse) return;
+    
+    setAwaitingResponse(true);
+    const currentStepData = chatFlow[currentStepIndex];
+    
+    console.log(`[Analise] Resposta recebida para ${currentStepData.field}:`, value);
+    
+    // Add user message
+    setMessages(prev => [...prev, {
+      type: 'user',
+      message: value,
+      timestamp: new Date()
+    }]);
+
+    // Update user data
+    const newUserData = { ...userData };
+    if (currentStepData.field) {
+      newUserData[currentStepData.field] = value;
+      setUserData(newUserData);
+      updateUser(newUserData);
+    }
+
+    setCurrentInput('');
+    setCurrentStepIndex(prev => prev + 1);
+  };
+
+  const handleOptionClick = (option) => {
+    if (awaitingResponse) return;
+    
+    console.log(`[Analise] Opção selecionada para ${chatFlow[currentStepIndex].field}:`, option);
+    handleSendMessage(option);
+  };
+
+  const handleButtonClick = (action) => {
+    if (action === 'complete') {
+      console.log('[Analise] Redirecionando para dashboard');
+      setCurrentStep('dashboard');
+      navigate('/dashboard');
     }
   };
 
-  const handleViewAnalysis = () => {
-    console.log('[Analise] Redirecionando para dashboard');
-    setCurrentStep('dashboard');
-    navigate('/dashboard');
-  };
+  const renderInput = () => {
+    if (currentStepIndex >= chatFlow.length || awaitingResponse) return null;
+    
+    const step = chatFlow[currentStepIndex];
+    
+    if (step.showButton) {
+      return (
+        <div className="p-4 border-t border-claro-accent/20">
+          <ClaroButton
+            onClick={() => handleButtonClick(step.buttonAction)}
+            size="lg"
+            className="w-full"
+          >
+            {step.buttonText}
+          </ClaroButton>
+        </div>
+      );
+    }
 
-  const currentStepData = chatSteps[currentStep];
-  const isWaitingForInput = currentStepData && ['input', 'multi-input'].includes(currentStepData.type);
-  const isWaitingForOptions = currentStepData && currentStepData.type === 'options';
-  const isFinalStep = currentStepData && currentStepData.type === 'final';
+    if (step.inputType === 'options') {
+      return (
+        <div className="p-4 border-t border-claro-accent/20">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+            {step.options.map((option, index) => (
+              <button
+                key={index}
+                onClick={() => handleOptionClick(option)}
+                disabled={awaitingResponse}
+                className="p-3 claro-glass hover:bg-claro-accent/10 text-white rounded-lg transition-all duration-300 text-sm font-medium border border-claro-accent/20 hover:border-claro-accent disabled:opacity-50"
+              >
+                {option}
+              </button>
+            ))}
+          </div>
+        </div>
+      );
+    }
+
+    if (step.inputType && !step.showButton && !step.showLoading) {
+      return (
+        <div className="p-4 border-t border-claro-accent/20">
+          <div className="flex gap-3">
+            <input
+              type={step.inputType}
+              value={currentInput}
+              onChange={(e) => setCurrentInput(e.target.value)}
+              onKeyPress={(e) => {
+                if (e.key === 'Enter' && currentInput.trim() && !awaitingResponse) {
+                  handleSendMessage(currentInput.trim());
+                }
+              }}
+              placeholder={step.placeholder || 'Digite sua resposta...'}
+              className="flex-1 p-3 claro-glass border border-claro-accent/20 rounded-lg text-white placeholder-gray-400 focus:border-claro-accent focus:outline-none"
+              autoFocus
+              disabled={awaitingResponse}
+            />
+            <button
+              onClick={() => currentInput.trim() && !awaitingResponse && handleSendMessage(currentInput.trim())}
+              disabled={!currentInput.trim() || awaitingResponse}
+              className="bg-claro-gradient hover:bg-claro-gradient-reverse disabled:bg-gray-600 text-white p-3 rounded-lg transition-colors"
+            >
+              <Send className="w-5 h-5" />
+            </button>
+          </div>
+        </div>
+      );
+    }
+
+    return null;
+  };
 
   return (
     <div className="min-h-screen bg-claro-background">
-      {/* Header with Assistant Info */}
-      <header className="bg-claro-card/80 backdrop-blur-sm border-b border-claro-accent/20 p-4">
-        <div className="flex items-center justify-between max-w-4xl mx-auto">
-          <div className="flex items-center space-x-3">
+      {/* Header */}
+      <header className="border-b border-claro-accent/20 bg-claro-card/50 backdrop-blur-claro">
+        <div className="container mx-auto px-4 py-6">
+          <div className="flex items-center gap-4">
             <div className="w-12 h-12 bg-claro-gradient rounded-full flex items-center justify-center">
-              <img 
-                src="https://images.unsplash.com/photo-1494790108755-2616b612b47c?w=80&h=80&fit=crop&crop=face&auto=format"
-                alt="Clara - Assistente IA"
-                className="w-10 h-10 rounded-full object-cover"
-              />
+              <Bot className="w-6 h-6 text-white" />
             </div>
             <div>
-              <h1 className="text-lg font-bold claro-text-gradient">Clara - Assistente ClaroAI</h1>
-              <p className="text-xs text-gray-400">Análise Comercial Inteligente</p>
+              <h1 className="text-xl font-bold">Clara - Assistente ClaroAI</h1>
+              <p className="text-gray-400 text-sm">Análise Comercial Inteligente</p>
             </div>
-          </div>
-          
-          <div className="flex items-center space-x-4">
-            <ProgressBar progress={formProgress} className="w-24" />
-            <span className="text-xs text-gray-400">{Math.round(formProgress)}%</span>
           </div>
         </div>
       </header>
 
-      {/* Chat Container */}
-      <div className="max-w-4xl mx-auto bg-claro-card/30 rounded-t-2xl mt-4 mx-4 shadow-claro-lg overflow-hidden">
-        {/* Chat Messages */}
-        <div className="h-96 overflow-y-auto p-6 space-y-4 bg-claro-background/50">
-          {messages.map((message) => (
-            <div
-              key={message.id}
-              className={`flex animate-fade-in ${message.type === 'user' ? 'justify-end' : 'justify-start'}`}
-            >
-              <div className={`flex gap-3 max-w-[80%] ${message.type === 'user' ? 'flex-row-reverse' : ''}`}>
-                {/* Avatar */}
-                <div className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${
-                  message.type === 'user' 
-                    ? 'bg-claro-gradient' 
-                    : 'bg-claro-accent'
-                }`}>
-                  {message.type === 'user' ? (
-                    <User className="text-white font-bold text-xs w-4 h-4" />
-                  ) : (
-                    <Bot className="text-white font-bold text-xs w-4 h-4" />
-                  )}
-                </div>
-                
-                {/* Message Bubble */}
-                <div className={`rounded-2xl p-4 shadow-sm ${
-                  message.type === 'user'
-                    ? 'bg-claro-gradient text-white'
-                    : 'claro-glass'
-                }`}>
-                  <p className="text-sm leading-relaxed whitespace-pre-line">{message.content}</p>
-                  
-                  {/* Options - Only show if not awaiting response */}
-                  {message.options && isWaitingForOptions && !awaitingResponse && (
-                    <div className="mt-4 grid gap-2">
-                      {message.options.map((option, index) => (
-                        <ClaroButton
-                          key={index}
-                          variant="secondary"
-                          size="sm"
-                          className="w-full text-left justify-start hover:scale-105 transition-transform"
-                          onClick={() => handleOptionSelect(option)}
-                          disabled={awaitingResponse}
-                        >
-                          {option}
-                        </ClaroButton>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              </div>
-            </div>
-          ))}
-
-          {/* Typing Animation */}
-          {isTyping && (
-            <div className="flex justify-start animate-fade-in">
-              <div className="flex gap-3 max-w-[80%]">
-                <div className="w-8 h-8 bg-claro-accent rounded-full flex items-center justify-center">
-                  <Bot className="text-white font-bold text-xs w-4 h-4" />
-                </div>
-                <div className="claro-glass rounded-2xl p-4">
-                  <div className="flex space-x-1">
-                    <div className="w-2 h-2 bg-claro-accent rounded-full animate-bounce"></div>
-                    <div className="w-2 h-2 bg-claro-accent rounded-full animate-bounce" style={{animationDelay: '0.1s'}}></div>
-                    <div className="w-2 h-2 bg-claro-accent rounded-full animate-bounce" style={{animationDelay: '0.2s'}}></div>
+      <div className="container mx-auto px-4 py-8">
+        <ClaroCard className="max-w-4xl mx-auto overflow-hidden">
+          {/* Messages */}
+          <div className="h-96 overflow-y-auto p-6 space-y-4">
+            {messages.map((message, index) => (
+              <div
+                key={index}
+                className={`flex ${message.type === 'user' ? 'justify-end' : 'justify-start'}`}
+              >
+                <div className={`flex gap-3 max-w-[80%] ${message.type === 'user' ? 'flex-row-reverse' : ''}`}>
+                  <div className={`w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 ${
+                    message.type === 'user' 
+                      ? 'bg-claro-gradient' 
+                      : 'claro-glass border border-claro-accent/20'
+                  }`}>
+                    {message.type === 'user' ? (
+                      <User className="w-5 h-5 text-white" />
+                    ) : (
+                      <Bot className="w-5 h-5 text-claro-accent" />
+                    )}
+                  </div>
+                  <div className={`rounded-2xl p-4 ${
+                    message.type === 'user'
+                      ? 'bg-claro-gradient text-white'
+                      : 'claro-glass text-gray-100'
+                  }`}>
+                    <p className="text-sm leading-relaxed">{message.message}</p>
+                    {message.showLoading && (
+                      <div className="flex items-center gap-2 mt-3">
+                        <div className="flex space-x-1">
+                          <div className="w-2 h-2 bg-claro-accent rounded-full animate-bounce"></div>
+                          <div className="w-2 h-2 bg-claro-accent rounded-full animate-bounce" style={{animationDelay: '0.1s'}}></div>
+                          <div className="w-2 h-2 bg-claro-accent rounded-full animate-bounce" style={{animationDelay: '0.2s'}}></div>
+                        </div>
+                        <span className="text-xs text-claro-accent">Analisando...</span>
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>
-            </div>
-          )}
-
-          {/* Loading State */}
-          {currentStepData?.type === 'loading' && (
-            <div className="flex justify-center animate-fade-in">
-              <LoadingSpinner text="Analisando seus dados..." />
-            </div>
-          )}
-
-          {/* Final CTA */}
-          {isFinalStep && !awaitingResponse && (
-            <div className="flex justify-center animate-fade-in">
-              <ClaroButton 
-                onClick={handleViewAnalysis} 
-                size="lg"
-                className="shadow-claro-lg hover:scale-105 transition-all duration-300"
-              >
-                Ver Minha Análise Completa
-              </ClaroButton>
-            </div>
-          )}
-
-          <div ref={messagesEndRef} />
-        </div>
-
-        {/* Input Area */}
-        {isWaitingForInput && !awaitingResponse && (
-          <div className="border-t border-claro-accent/20 bg-claro-card/50 p-4">
-            {currentStepData.type === 'multi-input' ? (
-              <div className="space-y-3">
-                <ClaroInput
-                  placeholder="@seuinstagram ou https://seusite.com"
-                  value={currentInput}
-                  onChange={(e) => setCurrentInput(e.target.value)}
-                  onKeyPress={(e) => e.key === 'Enter' && handleMultiInputSubmit()}
-                  className="w-full"
-                />
-                <div className="flex space-x-2">
-                  <ClaroButton
-                    onClick={handleMultiInputSubmit}
-                    className="flex-1"
-                  >
-                    Continuar
-                  </ClaroButton>
-                  <ClaroButton
-                    variant="ghost"
-                    onClick={() => {
-                      if (!awaitingResponse) {
-                        addMessage('Ainda não tenho', 'user');
-                        setAwaitingResponse(true);
-                        setTimeout(() => {
-                          setAwaitingResponse(false);
-                          proceedToNextStep();
-                        }, 1000);
-                      }
-                    }}
-                  >
-                    Pular
-                  </ClaroButton>
+            ))}
+            
+            {isTyping && (
+              <div className="flex justify-start">
+                <div className="flex gap-3 max-w-[80%]">
+                  <div className="w-10 h-10 claro-glass border border-claro-accent/20 rounded-full flex items-center justify-center">
+                    <Bot className="w-5 h-5 text-claro-accent" />
+                  </div>
+                  <div className="claro-glass rounded-2xl p-4">
+                    <div className="flex space-x-1">
+                      <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></div>
+                      <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{animationDelay: '0.1s'}}></div>
+                      <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{animationDelay: '0.2s'}}></div>
+                    </div>
+                  </div>
                 </div>
               </div>
-            ) : (
-              <div className="flex space-x-3">
-                <ClaroInput
-                  placeholder={currentStepData.placeholder}
-                  value={currentInput}
-                  onChange={(e) => setCurrentInput(e.target.value)}
-                  onKeyPress={(e) => e.key === 'Enter' && handleInputSubmit(currentInput)}
-                  className="flex-1"
-                />
-                <ClaroButton
-                  onClick={() => handleInputSubmit(currentInput)}
-                  disabled={!currentInput.trim() || awaitingResponse}
-                  className="px-6"
-                >
-                  Enviar
-                </ClaroButton>
-              </div>
             )}
+            
+            <div ref={messagesEndRef} />
           </div>
-        )}
+
+          {/* Input */}
+          {renderInput()}
+        </ClaroCard>
       </div>
     </div>
   );

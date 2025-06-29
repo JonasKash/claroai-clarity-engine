@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { BarChart, Target, TrendingUp, Users, Instagram, Globe, Mail, Linkedin } from 'lucide-react';
 import ClaroCard from './ClaroCard';
@@ -13,6 +12,21 @@ const InteractiveDashboard = () => {
     { id: 'anuncios', label: 'Anúncios Prontos', icon: Target },
     { id: 'icp', label: 'ICP Ideal', icon: Users }
   ];
+
+  const instagramMockData = {
+    profilePic: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=80&h=80&fit=crop&crop=face&auto=format",
+    followers: "1.2K",
+    following: "890",
+    posts: "156",
+    lastPosts: [
+      "https://images.unsplash.com/photo-1611224923853-80b023f02d71?w=100&h=100&fit=crop&auto=format",
+      "https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=100&h=100&fit=crop&auto=format",
+      "https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=100&h=100&fit=crop&auto=format"
+    ],
+    engagement: "7.3%",
+    score: 75,
+    status: "Bom"
+  };
 
   const mockData = {
     mercado: {
@@ -191,39 +205,98 @@ const InteractiveDashboard = () => {
               <h3 className="text-claro-h3 font-bold mb-6 claro-text-gradient">Análise do Posicionamento Digital</h3>
               
               <div className="grid gap-4">
-                {Object.entries(mockData.digital).map(([platform, data]) => (
-                  <ClaroCard key={platform}>
-                    <div className="flex items-center justify-between mb-4">
-                      <div className="flex items-center gap-3">
-                        {platform === 'instagram' && <Instagram className="w-6 h-6 text-pink-400" />}
-                        {platform === 'google' && <Globe className="w-6 h-6 text-blue-400" />}
-                        {platform === 'site' && <Globe className="w-6 h-6 text-green-400" />}
-                        <h4 className="text-lg font-semibold capitalize">{platform}</h4>
+                {/* Instagram with detailed analysis */}
+                <ClaroCard>
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="flex items-center gap-3">
+                      <Instagram className="w-6 h-6 text-pink-400" />
+                      <h4 className="text-lg font-semibold">Instagram</h4>
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <span className={`text-2xl font-bold ${getScoreColor(instagramMockData.score)}`}>
+                        {instagramMockData.score}/100
+                      </span>
+                      <span className="px-3 py-1 rounded-full text-xs font-medium bg-claro-success/20 text-claro-success">
+                        {instagramMockData.status}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Detailed Instagram Analysis */}
+                  <div className="mb-4 p-4 claro-glass rounded-lg">
+                    <div className="flex items-center gap-4 mb-4">
+                      <img 
+                        src={instagramMockData.profilePic} 
+                        alt="Profile" 
+                        className="w-16 h-16 rounded-full object-cover"
+                      />
+                      <div>
+                        <h5 className="text-lg font-semibold">@seuperfil</h5>
+                        <div className="flex gap-4 text-sm text-gray-400">
+                          <span>{instagramMockData.followers} seguidores</span>
+                          <span>{instagramMockData.following} seguindo</span>
+                          <span>{instagramMockData.posts} posts</span>
+                        </div>
                       </div>
-                      <div className="flex items-center gap-3">
-                        <span className={`text-2xl font-bold ${getScoreColor(data.score)}`}>
-                          {data.score}/100
-                        </span>
-                        <span className={`px-3 py-1 rounded-full text-xs font-medium ${
-                          data.score >= 70 ? 'bg-claro-success/20 text-claro-success' :
-                          data.score >= 50 ? 'bg-claro-warning/20 text-claro-warning' :
+                    </div>
+                    
+                    <div className="mb-4">
+                      <h6 className="text-sm font-medium text-claro-accent mb-2">Últimos Posts:</h6>
+                      <div className="flex gap-2">
+                        {instagramMockData.lastPosts.map((post, i) => (
+                          <img key={i} src={post} alt={`Post ${i+1}`} className="w-16 h-16 rounded object-cover" />
+                        ))}
+                      </div>
+                    </div>
+                    
+                    <div className="text-center">
+                      <div className="text-claro-accent font-medium">
+                        Engajamento: {instagramMockData.engagement}
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <ProgressBar progress={instagramMockData.score} className="mb-4" />
+                  
+                  <div>
+                    <p className="text-claro-accent text-sm font-medium mb-2">Melhorias Prioritárias:</p>
+                    <ul className="space-y-1">
+                      {mockData.digital.instagram.melhorias.map((melhoria, i) => (
+                        <li key={i} className="text-gray-300 text-sm flex items-center gap-2">
+                          <div className="w-1.5 h-1.5 bg-claro-accent rounded-full"></div>
+                          {melhoria}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                </ClaroCard>
+
+                {/* Other platforms */}
+                {Object.entries(mockData.digital).filter(([platform]) => platform !== 'instagram').map(([platform, data]) => (
+                  <ClaroCard key={platform}>
+                    <div className="flex items-center justify-between mb-3">
+                      <div className="flex items-center gap-2">
+                        {platform === 'google' && <Globe className="w-5 h-5 text-blue-400" />}
+                        {platform === 'site' && <Globe className="w-5 h-5 text-green-400" />}
+                        <h4 className="text-white font-semibold capitalize">{platform}</h4>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-2xl font-bold text-white">{data.score}/100</span>
+                        <span className={`px-2 py-1 rounded text-xs font-medium ${
+                          data.score >= 70 ? 'bg-green-500/20 text-green-400' :
+                          data.score >= 50 ? 'bg-yellow-500/20 text-yellow-400' :
                           'bg-red-500/20 text-red-400'
                         }`}>
                           {data.status}
                         </span>
                       </div>
                     </div>
-                    
-                    <ProgressBar progress={data.score} className="mb-4" />
-                    
+                    <ProgressBar progress={data.score} className="mb-3" />
                     <div>
-                      <p className="text-claro-accent text-sm font-medium mb-2">Melhorias Prioritárias:</p>
+                      <p className="text-claro-accent text-sm font-medium mb-1">Melhorias Prioritárias:</p>
                       <ul className="space-y-1">
-                        {data.melhorias.map((melhoria, i) => (
-                          <li key={i} className="text-gray-300 text-sm flex items-center gap-2">
-                            <div className="w-1.5 h-1.5 bg-claro-accent rounded-full"></div>
-                            {melhoria}
-                          </li>
+                        {data.melhorias.map((m, i) => (
+                          <li key={i} className="text-gray-300 text-sm">• {m}</li>
                         ))}
                       </ul>
                     </div>

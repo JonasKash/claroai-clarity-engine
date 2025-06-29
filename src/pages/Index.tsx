@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { BarChart, Target, TrendingUp, Users, FileText, ArrowDown } from 'lucide-react';
@@ -41,21 +42,6 @@ const Index = () => {
     { letra: 'R', titulo: 'Roteiros Personalizados', icon: <FileText className="h-6 w-6" />, descricao: 'Anúncios e campanhas prontos para usar' },
     { letra: 'O', titulo: 'Otimização Contínua', icon: <TrendingUp className="h-6 w-6" />, descricao: 'Melhorias constantes baseadas em dados' }
   ];
-
-  // Mock Instagram data for demonstration
-  const instagramMockData = {
-    profilePic: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=80&h=80&fit=crop&crop=face&auto=format",
-    followers: "1.2K",
-    following: "890",
-    posts: "156",
-    lastPosts: [
-      "https://images.unsplash.com/photo-1611224923853-80b023f02d71?w=100&h=100&fit=crop&auto=format",
-      "https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=100&h=100&fit=crop&auto=format",
-      "https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=100&h=100&fit=crop&auto=format"
-    ],
-    engagement: "7.3%",
-    score: "75/100"
-  };
 
   const depoimentos = [
     {
@@ -129,47 +115,6 @@ const Index = () => {
             >
               Gerar Minha Análise Gratuita
             </ClaroButton>
-
-            {/* Instagram Analysis Preview */}
-            <div className="max-w-3xl mx-auto mt-12">
-              <h3 className="text-xl font-semibold mb-6 text-claro-accent">Análise Prévia do Instagram</h3>
-              <ClaroCard className="p-6">
-                <div className="flex items-center gap-4 mb-6">
-                  <img 
-                    src={instagramMockData.profilePic} 
-                    alt="Profile" 
-                    className="w-16 h-16 rounded-full object-cover"
-                  />
-                  <div className="text-left">
-                    <h4 className="text-lg font-semibold">@seuperfil</h4>
-                    <div className="flex gap-4 text-sm text-gray-400">
-                      <span>{instagramMockData.followers} seguidores</span>
-                      <span>{instagramMockData.following} seguindo</span>
-                      <span>{instagramMockData.posts} posts</span>
-                    </div>
-                  </div>
-                </div>
-                
-                <div className="mb-4">
-                  <h5 className="text-sm font-medium text-claro-accent mb-2">Últimos Posts:</h5>
-                  <div className="flex gap-2 justify-center">
-                    {instagramMockData.lastPosts.map((post, i) => (
-                      <img key={i} src={post} alt={`Post ${i+1}`} className="w-16 h-16 rounded object-cover" />
-                    ))}
-                  </div>
-                </div>
-                
-                <div className="text-center">
-                  <div className="mb-2">
-                    <span className="text-2xl font-bold text-claro-success">{instagramMockData.score}</span>
-                    <span className="text-gray-400 ml-2">Score Geral</span>
-                  </div>
-                  <div className="text-claro-accent">
-                    Engajamento: {instagramMockData.engagement}
-                  </div>
-                </div>
-              </ClaroCard>
-            </div>
           </div>
         </div>
       </section>
