@@ -8,12 +8,22 @@ import { useAppContext } from '@/contexts/AppContext';
 
 const Analise = () => {
   const navigate = useNavigate();
-  const { updateUser, setCurrentStep } = useAppContext();
+  const { setUser, setCurrentStep } = useAppContext();
   const [messages, setMessages] = useState([]);
   const [currentInput, setCurrentInput] = useState('');
   const [currentStepIndex, setCurrentStepIndex] = useState(0);
   const [isTyping, setIsTyping] = useState(false);
-  const [userData, setUserData] = useState({});
+  const [userData, setUserData] = useState({
+    nome: '',
+    whatsapp: '',
+    tipoNegocio: '',
+    faturamento: '',
+    desafio: '',
+    site: '',
+    instagram: '',
+    prospeccao: '',
+    investimento: '',
+  });
   const [awaitingResponse, setAwaitingResponse] = useState(false);
   const messagesEndRef = useRef(null);
 
@@ -177,7 +187,7 @@ const Analise = () => {
     if (currentStepData.field) {
       newUserData[currentStepData.field] = value;
       setUserData(newUserData);
-      updateUser(newUserData);
+      setUser(newUserData);
     }
 
     setCurrentInput('');
