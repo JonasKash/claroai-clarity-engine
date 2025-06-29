@@ -25,11 +25,14 @@ const Analise = () => {
     investimento: '',
   });
   const [awaitingResponse, setAwaitingResponse] = useState(false);
+  const [chatStarted, setChatStarted] = useState(false);
   const messagesEndRef = useRef(null);
 
   // Auto-scroll to bottom whenever messages change
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    if (messagesEndRef.current) {
+      messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
+    }
   }, [messages, isTyping]);
 
   const chatFlow = [
@@ -94,7 +97,7 @@ const Analise = () => {
     {
       id: 'instagram',
       type: 'bot',
-      message: '', // Will be set dynamically based on site response
+      message: '', // Will be set dynamically
       inputType: 'text',
       field: 'instagram',
       delay: 1000,
@@ -136,81 +139,109 @@ const Analise = () => {
     }
   ];
 
+  // Initialize chat
   useEffect(() => {
-    console.log('[Analise] Iniciando chat');
-    if (currentStepIndex < chatFlow.length) {
-      const step = chatFlow[currentStepIndex];
+    console.log('[Analise] Component mounted, starting chat');
+    if (!chatStarted) {
+      setChatStarted(true);
+      processNextStep(0);
+    }
+  }, []);
+
+  // Process next step in chat flow
+  const processNextStep = (stepIndex) => {
+    console.log(`[Analise] Processing step ${stepIndex}`);
+    
+    if (stepIndex >= chatFlow.length) {
+      console.log('[Analise] Chat flow completed');
+      return;
+    }
+
+    const step = chatFlow[stepIndex];
+    
+    setTimeout(() => {
+      setIsTyping(true);
       
       setTimeout(() => {
-        setIsTyping(true);
+        setIsTyping(false);
+        let message = step.message;
         
-        setTimeout(() => {
-          setIsTyping(false);
-          let message = step.message;
-          
-          // Handle dynamic Instagram message based on site response
-          if (step.id === 'instagram') {
-            const hasSite = userData.site && userData.site.toLowerCase() !== 'não tenho' && userData.site.trim() !== '';
-            message = hasSite ? 'Ótimo! E qual seu Instagram (@usuario)?' : 'Entendido. Qual seu Instagram (@usuario)?';
-          } else {
-            message = message.replace('{nome}', userData.nome || '');
-          }
-          
-          setMessages(prev => [...prev, {
-            ...step,
-            message,
-            timestamp: new Date()
-          }]);
-          setAwaitingResponse(false);
-        }, 1500);
-      }, step.delay || 0);
-    }
-  }, [currentStepIndex, userData.nome, userData.site]);
+        // Handle dynamic Instagram message based on site response
+        if (step.id === 'instagram') {
+          const hasSite = userData.site && userData.site.toLowerCase() !== 'não tenho' && userData.site.trim() !== '';
+          message = hasSite ? 'Ótimo! E qual seu Instagram (@usuario)?' : 'Entendido. Qual seu Instagram (@usuario)?';
+        } else {
+          message = message.replace('{nome}', userData.nome || '');
+        }
+        
+        setMessages(prev => [...prev, {
+          ...step,
+          message,
+          timestamp: new Date()
+        }]);
+        
+        setAwaitingResponse(step.inputType ? true : false);
+        
+        // If step doesn't require input, move to next step
+        if (!step.inputType && !step.showButton && !step.showLoading) {
+          setCurrentStepIndex(stepIndex + 1);
+        }
+      }, 1500);
+    }, step.delay || 0);
+  };
 
+  // Handle sending message
   const handleSendMessage = (value) => {
-    if (awaitingResponse) return;
-    
-    setAwaitingResponse(true);
-    const currentStepData = chatFlow[currentStepIndex];
-    
-    console.log(`[Analise] Resposta recebida para ${currentStepData.field}:`, value);
-    
-    // Add user message
-    setMessages(prev => [...prev, {
-      type: 'user',
-      message: value,
-      timestamp: new Date()
-    }]);
+    if (awaitingResponse && currentStepIndex < chatFlow.length) {
+      console.log(`[Analise] Message sent: ${value}`);
+      
+      const currentStepData = chatFlow[currentStepIndex];
+      
+      // Add user message
+      setMessages(prev => [...prev, {
+        type: 'user',
+        message: value,
+        timestamp: new Date()
+      }]);
 
-    // Update user data
-    const newUserData = { ...userData };
-    if (currentStepData.field) {
-      newUserData[currentStepData.field] = value;
-      setUserData(newUserData);
-      setUser(newUserData);
+      // Update user data
+      const newUserData = { ...userData };
+      if (currentStepData.field) {
+        newUserData[currentStepData.field] = value;
+        setUserData(newUserData);
+        setUser(newUserData);
+      }
+
+      setCurrentInput('');
+      setAwaitingResponse(false);
+      
+      // Move to next step
+      const nextStepIndex = currentStepIndex + 1;
+      setCurrentStepIndex(nextStepIndex);
+      
+      // Process next step after a short delay
+      setTimeout(() => {
+        processNextStep(nextStepIndex);
+      }, 500);
     }
-
-    setCurrentInput('');
-    setCurrentStepIndex(prev => prev + 1);
   };
 
   const handleOptionClick = (option) => {
-    if (awaitingResponse) return;
-    
-    console.log(`[Analise] Opção selecionada para ${chatFlow[currentStepIndex].field}:`, option);
-    handleSendMessage(option);
+    if (awaitingResponse) {
+      handleSendMessage(option);
+    }
   };
 
   const handleButtonClick = (action) => {
     if (action === 'complete') {
-      console.log('[Analise] Redirecionando para dashboard');
+      console.log('[Analise] Redirecting to dashboard');
       setCurrentStep('dashboard');
       navigate('/dashboard');
     }
   };
 
   const renderInput = () => {
-    if (currentStepIndex >= chatFlow.length || awaitingResponse) return null;
+    if (currentStepIndex >= chatFlow.length) return null;
     
     const step = chatFlow[currentStepIndex];
     
@@ -228,7 +259,7 @@ const Analise = () => {
       );
     }
 
-    if (step.inputType === 'options') {
+    if (step.inputType === 'options' && awaitingResponse) {
       return (
         <div className="p-4 border-t border-claro-accent/20">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
@@ -236,8 +267,7 @@ const Analise = () => {
               <button
                 key={index}
                 onClick={() => handleOptionClick(option)}
-                disabled={awaitingResponse}
-                className="p-3 claro-glass hover:bg-claro-accent/10 text-white rounded-lg transition-all duration-300 text-sm font-medium border border-claro-accent/20 hover:border-claro-accent disabled:opacity-50"
+                className="p-3 claro-glass hover:bg-claro-accent/10 text-white rounded-lg transition-all duration-300 text-sm font-medium border border-claro-accent/20 hover:border-claro-accent"
               >
                 {option}
               </button>
@@ -247,7 +277,7 @@ const Analise = () => {
       );
     }
 
-    if (step.inputType && !step.showButton && !step.showLoading) {
+    if (step.inputType && step.inputType !== 'options' && awaitingResponse && !step.showButton && !step.showLoading) {
       return (
         <div className="p-4 border-t border-claro-accent/20">
           <div className="flex gap-3">
@@ -256,18 +286,17 @@ const Analise = () => {
               value={currentInput}
               onChange={(e) => setCurrentInput(e.target.value)}
               onKeyPress={(e) => {
-                if (e.key === 'Enter' && currentInput.trim() && !awaitingResponse) {
+                if (e.key === 'Enter' && currentInput.trim()) {
                   handleSendMessage(currentInput.trim());
                 }
               }}
               placeholder={step.placeholder || 'Digite sua resposta...'}
               className="flex-1 p-3 claro-glass border border-claro-accent/20 rounded-lg text-white placeholder-gray-400 focus:border-claro-accent focus:outline-none"
               autoFocus
-              disabled={awaitingResponse}
             />
             <button
-              onClick={() => currentInput.trim() && !awaitingResponse && handleSendMessage(currentInput.trim())}
-              disabled={!currentInput.trim() || awaitingResponse}
+              onClick={() => currentInput.trim() && handleSendMessage(currentInput.trim())}
+              disabled={!currentInput.trim()}
               className="bg-claro-gradient hover:bg-claro-gradient-reverse disabled:bg-gray-600 text-white p-3 rounded-lg transition-colors"
             >
               <Send className="w-5 h-5" />
