@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { BarChart, Target, TrendingUp, Users, FileText, ArrowDown } from 'lucide-react';
@@ -6,15 +5,22 @@ import ClaroButton from '@/components/ClaroButton';
 import ClaroCard from '@/components/ClaroCard';
 import InteractiveDashboard from '@/components/InteractiveDashboard';
 import { useAppContext } from '@/contexts/AppContext';
+import { useChat } from '@/contexts/ChatContext';
 
 const Index = () => {
   const navigate = useNavigate();
   const { setCurrentStep } = useAppContext();
+  const { initiateProactiveChat } = useChat();
 
   const handleStartAnalysis = () => {
     console.log('[Landing] Iniciando análise');
     setCurrentStep('formulario');
     navigate('/analise');
+  };
+
+  const handleProactiveChat = () => {
+    console.log('[Landing] Iniciando chat proativo');
+    initiateProactiveChat();
   };
 
   const problemas = [
@@ -86,9 +92,14 @@ const Index = () => {
             <a href="#contato" className="text-gray-300 hover:text-claro-accent transition-colors">Contato</a>
           </nav>
 
+          <div className="flex gap-2">
+            <ClaroButton onClick={handleProactiveChat} size="sm" variant="secondary">
+              Quero uma Análise Gratuita
+            </ClaroButton>
           <ClaroButton onClick={handleStartAnalysis} size="sm">
-            Análise Gratuita
+              Análise Completa
           </ClaroButton>
+          </div>
         </div>
       </header>
 
@@ -108,13 +119,23 @@ const Index = () => {
               <strong className="text-claro-accent">Método C.L.A.R.O</strong> comprovado para prestadores de serviços.
             </p>
 
+            <div className="flex flex-col sm:flex-row gap-4 justify-center mb-8">
+              <ClaroButton 
+                onClick={handleProactiveChat}
+                size="lg"
+                className="text-xl px-12 py-4 hover:scale-105 transition-transform"
+              >
+                Quero uma Análise Gratuita
+              </ClaroButton>
             <ClaroButton 
               onClick={handleStartAnalysis}
               size="lg"
-              className="mb-8 text-xl px-12 py-4 hover:scale-105 transition-transform"
+                variant="secondary"
+                className="text-xl px-12 py-4 hover:scale-105 transition-transform"
             >
-              Gerar Minha Análise Gratuita
+                Análise Completa
             </ClaroButton>
+            </div>
           </div>
         </div>
       </section>
